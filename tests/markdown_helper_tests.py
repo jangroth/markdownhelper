@@ -1,47 +1,29 @@
 import pytest
 
-from markdown_helper import MarkdownHelper, MarkdownLine
+from markdown_helper import MarkdownLine
 
 
 @pytest.fixture
-def mdh():
-    return MarkdownHelper.__new__(MarkdownHelper)
+def mdl():
+    return MarkdownLine.__new__(MarkdownLine)
 
 
-@pytest.fixture
-def mdh_simple(mdh):
-    mdh.raw_content = ['zero', '# one', '## two']
-    return mdh
+def test_should_get_header_level_from_line(mdl):
+    assert mdl._get_header_level('') == 0
+    assert mdl._get_header_level('# adsf') == 1
+    assert mdl._get_header_level('## adsf') == 2
+    assert mdl._get_header_level('# #') == 1
+    assert mdl._get_header_level(' ##') == 0
 
 
-def test_should_get_header_level_from_line(mdh):
-    assert mdh._get_header_level('') == 0
-    assert mdh._get_header_level('# adsf') == 1
-    assert mdh._get_header_level('## adsf') == 2
-    assert mdh._get_header_level('# #') == 1
-    assert mdh._get_header_level(' ##') == 0
+def test_calculate_new_index(mdl):
+    assert mdl._generate_index([], 'test') == []
 
+    assert mdl._generate_index([], '# test') == [1]
+    assert mdl._generate_index([2], '## test') == [2, 1]
 
-def test_calculate_new_index(mdh):
-    assert mdh._get_markdown_line([], 'test').index == []
+    assert mdl._generate_index([1], '# test') == [2]
+    assert mdl._generate_index([1, 2], '## test') == [1, 3]
 
-    assert mdh._get_markdown_line([], '# test').index == [1]
-    assert mdh._get_markdown_line([2], '## test').index == [2, 1]
-
-    assert mdh._get_markdown_line([1], '# test').index == [2]
-    assert mdh._get_markdown_line([1, 2], '## test').index == [1, 3]
-
-    assert mdh._get_markdown_line([1, 2], '# test').index == [2]
-    assert mdh._get_markdown_line([1, 2, 3], '## test').index == [1, 3]
-
-
-def test_calculate_new_line(mdh):
-    assert mdh._get_markdown_line([], 'test') == MarkdownLine(index=[], line='test')
-    assert mdh._get_markdown_line([], '# test') == MarkdownLine(index=[1], line='# test')
-    assert mdh._get_markdown_line([1, 2, 3], '## test') == MarkdownLine(index=[1, 3], line='## test')
-
-
-def test_conversion(mdh_simple):
-    assert mdh_simple._convert_to_mdlines(mdh_simple.raw_content) == [MarkdownLine(index=[], line='zero'),
-                                                                      MarkdownLine(index=[1], line='# one'),
-                                                                      MarkdownLine(index=[1, 1], line='## two')]
+    assert mdl._generate_index([1, 2], '# test') == [2]
+    assert mdl._generate_index([1, 2, 3], '## test') == [1, 3]

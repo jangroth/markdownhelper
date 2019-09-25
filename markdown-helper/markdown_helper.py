@@ -1,10 +1,52 @@
 import re
-from collections import namedtuple
 
 PATH = '/home/jan/Projects/test/markdown.md'
-HEADER_CHAR = re.compile('^#*')
 
-MarkdownLine = namedtuple('MarkdownLine', 'index line')
+
+class MarkdownLine:
+    HEADER_CHAR = re.compile('^#*')
+
+    def __init__(self, line, previous_index=None):
+        self.line = line
+        self.index = self._generate_index(previous_index, line)
+
+    @staticmethod
+    def _get_header_level(line):
+        check = re.search(MarkdownLine.HEADER_CHAR, line)
+        return check.span()[1] if check else 0
+
+    @staticmethod
+    def _add_new_level(index):
+        return [*index, 1]
+
+    @staticmethod
+    def _bump_current_level(index):
+        return index[:-1] + [(index[-1] + 1)]
+
+    @staticmethod
+    def _remove_current_and_bump_previous_level(index):
+        return index[:-2] + [(index[-2] + 1)]
+
+    def _generate_index(self, previous_index, line):
+        previous_level = len(previous_index)
+        current_level = self._get_header_level(line)
+        if current_level:
+            if current_level > previous_level:
+                return self._add_new_level(previous_index)
+            elif current_level == previous_level:
+                return self._bump_current_level(previous_index)
+            elif current_level < previous_level:
+                return self._remove_current_and_bump_previous_level(previous_index)
+        else:
+            return []
+
+    @property
+    def line(self):
+        return self.line
+
+    @property
+    def index(self):
+        return self.index
 
 
 class MarkdownHelper:
@@ -21,31 +63,10 @@ class MarkdownHelper:
         result = []
         current_index = []
         for line in lines:
-            md_line = self._get_markdown_line(current_index, line.strip('\n'))
+            md_line = MarkdownLine(line=line.strip('\n'), previous_index=current_index)
             current_index = md_line.index
             result.append(md_line)
         return result
-
-    def _get_header_level(self, line):
-        check = re.search(HEADER_CHAR, line)
-        return check.span()[1] if check else 0
-
-    def _get_markdown_line(self, last_index, line):
-        last_level = len(last_index)
-        new_index = last_index[:]
-        current_level = self._get_header_level(line)
-        if current_level:
-            if current_level > last_level:
-                new_index.append(1)
-            elif current_level == last_level:
-                last_index_of_this_level = last_index[-1]
-                new_index = last_index[0:current_level - 1]
-                new_index.append(last_index_of_this_level + 1)
-            elif current_level < last_level:
-                last_index_of_previous_level = last_index[-2]
-                new_index = last_index[0:current_level - 1]
-                new_index.append(last_index_of_previous_level + 1)
-        return MarkdownLine(new_index, line)
 
     def print(self):
         for md_line in self.md_content:
