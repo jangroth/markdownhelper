@@ -19,10 +19,10 @@ class MarkdownHelper:
 
     def _convert_to_mdlines(self, lines):
         result = []
-        last_index = []
+        current_index = []
         for line in lines:
-            line = line.strip('\n')
-            last_index, md_line = self._get_markdown_line(last_index, line)
+            md_line = self._get_markdown_line(current_index, line.strip('\n'))
+            current_index = md_line.index
             result.append(md_line)
         return result
 
@@ -31,8 +31,8 @@ class MarkdownHelper:
         return check.span()[1] if check else 0
 
     def _get_markdown_line(self, last_index, line):
-        new_index = last_index[:]
         last_level = len(last_index)
+        new_index = last_index[:]
         current_level = self._get_header_level(line)
         if current_level:
             if current_level > last_level:
@@ -45,7 +45,7 @@ class MarkdownHelper:
                 last_index_of_previous_level = last_index[-2]
                 new_index = last_index[0:current_level - 1]
                 new_index.append(last_index_of_previous_level + 1)
-        return new_index, MarkdownLine(new_index, line)
+        return MarkdownLine(new_index, line)
 
     def print(self):
         for md_line in self.md_content:
