@@ -10,10 +10,10 @@ def mdh():
 
 @click.command()
 @click.argument('path')
-@click.option('--index/--no-index', default=False)
+@click.option('--toc/--no-toc', default=False, help='Add toc')
 @click.option('--debug/--no-debug', default=False)
-def dump(path, index, debug):
-    MarkdownHelper(path=path).dump(generate_index=index, debug=debug)
+def dump(path, toc, debug):
+    MarkdownHelper(path=path).dump(generate_toc=toc, debug=debug)
 
 
 if __name__ == '__main__':

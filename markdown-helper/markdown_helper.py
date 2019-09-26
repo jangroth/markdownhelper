@@ -85,11 +85,20 @@ class MarkdownHelper:
             result.append(md_line)
         return result
 
-    def _print_line(self, md_line, generate_index, debug):
-        index = f'<a name="{md_line.anchor_name}"></a>\n' if generate_index and md_line.index else ''
+    def _print_line(self, md_line, generate_anchors, debug):
+        anchor = f'<a name="{md_line.anchor_name}"></a>\n' if generate_anchors and md_line.index else ''
         debug = f'{md_line.index} - ' if debug and md_line.index else ''
-        print(f'{index}{debug}{md_line.line}')
+        print(f'{anchor}{debug}{md_line.line}')
 
-    def dump(self, generate_index=False, debug=False):
+    def _print_toc(self):
+        print('---')
         for md_line in self.md_content:
-            self._print_line(md_line, generate_index, debug)
+            if md_line.index:
+                print(f'* {"  " * (len(md_line.index) - 1)}[{md_line.line.partition(" ")[2]}](#{md_line.anchor_name})')
+        print('---')
+
+    def dump(self, generate_toc=False, debug=False):
+        for md_line in self.md_content:
+            self._print_line(md_line, generate_toc, debug)
+        if generate_toc:
+            self._print_toc()
