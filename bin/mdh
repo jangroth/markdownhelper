@@ -1,0 +1,4 @@
+#! /usr/bin/env bash
+export PYTHONPATH=${PYTHONPATH}:../markdown-helper
+python3 markdown-helper/mdh_cli.py $@
+
