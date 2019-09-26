@@ -35,7 +35,8 @@ def test_calculate_new_index(mdl):
     assert mdl._generate_index([1, 2, 3], '## test') == [1, 3]
 
 
-def test_parse_file(mdh):
+def test_convert_mutiple_lines(mdh):
     mdlines = mdh._convert_to_mdlines(['one', '# two', 'three', '# four'])
 
     assert [(mdline.index, mdline.line) for mdline in mdlines] == [([], 'one'), ([1], '# two'), ([1], 'three'), ([2], '# four')]
+

@@ -1,7 +1,5 @@
 import re
 
-PATH = '../tests/resources/simple.md'
-
 
 class MarkdownLine:
     HEADER_CHAR = re.compile('^#*')
@@ -85,7 +83,3 @@ class MarkdownHelper:
     def print(self):
         for md_line in self.md_content:
             print(md_line)
-
-
-if __name__ == '__main__':
-    MarkdownHelper(PATH).print()
