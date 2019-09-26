@@ -1,14 +1,28 @@
 import re
 
-PATH = '/home/jan/Projects/test/markdown.md'
+PATH = '../tests/resources/simple.md'
 
 
 class MarkdownLine:
     HEADER_CHAR = re.compile('^#*')
 
     def __init__(self, line, previous_index=None):
-        self.line = line
-        self.index = self._generate_index(previous_index, line)
+        self._line = line
+        self._index = self._generate_index(previous_index, line)
+
+    def __str__(self):
+        return f'{self._index} - {self._line}'
+
+    def __eq__(self, other):
+        if not isinstance(other, MarkdownLine):
+            return NotImplemented
+        return self._line == other._line and self._index == other._index
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __hash__(self):
+        return hash((self._line, self._index))
 
     @staticmethod
     def _get_header_level(line):
@@ -38,15 +52,15 @@ class MarkdownLine:
             elif current_level < previous_level:
                 return self._remove_current_and_bump_previous_level(previous_index)
         else:
-            return []
+            return previous_index[:]
 
     @property
     def line(self):
-        return self.line
+        return self._line
 
     @property
     def index(self):
-        return self.index
+        return self._index
 
 
 class MarkdownHelper:
