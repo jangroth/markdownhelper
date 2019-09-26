@@ -4,7 +4,7 @@ import re
 class MarkdownLine:
     HEADER_CHAR = re.compile('^#*')
 
-    def __init__(self, line, previous_index=None):
+    def __init__(self, line, previous_index=[]):
         self._line = line
         self._index = self._generate_index(previous_index, line)
 

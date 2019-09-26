@@ -13,6 +13,15 @@ def mdh():
     return MarkdownHelper.__new__(MarkdownHelper)
 
 
+def test_should_equal_and_not_equal():
+    md1 = MarkdownLine('a')
+    md2 = MarkdownLine('a')
+    md3 = MarkdownLine('# b', [1])
+    assert md1 == md2
+    assert md1 != md3
+    assert str(md3) == '[2] - # b'
+
+
 def test_should_create_anchor_name_from_index(mdl):
     mdl._index = [1, 2]
     assert mdl.anchor_name == '1_2'
