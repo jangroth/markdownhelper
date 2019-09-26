@@ -94,7 +94,7 @@ class MarkdownHelper:
         print('---')
         for md_line in self.md_content:
             if md_line.index:
-                print(f'* {"  " * (len(md_line.index) - 1)}[{md_line.line.partition(" ")[2]}](#{md_line.anchor_name})')
+                print(f'{"  " * (len(md_line.index) - 1)}* [{md_line.line.partition(" ")[2]}](#{md_line.anchor_name})')
         print('---')
 
     def dump(self, generate_toc=False, debug=False):
