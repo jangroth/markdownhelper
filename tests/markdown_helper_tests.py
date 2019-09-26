@@ -13,6 +13,13 @@ def mdh():
     return MarkdownHelper.__new__(MarkdownHelper)
 
 
+def test_should_create_anchor_name_from_index(mdl):
+    mdl._index = [1, 2]
+    assert mdl.anchor_name == '1_2'
+    mdl._index = []
+    assert mdl.anchor_name == ''
+
+
 def test_should_get_header_level_from_line(mdl):
     assert mdl._get_header_level('') == 0
     assert mdl._get_header_level('# adsf') == 1
@@ -23,7 +30,7 @@ def test_should_get_header_level_from_line(mdl):
 
 def test_calculate_new_index(mdl):
     assert mdl._generate_index([], 'test') == []
-    assert mdl._generate_index([1], 'test') == [1]
+    assert mdl._generate_index([1], 'test') == []
 
     assert mdl._generate_index([], '# test') == [1]
     assert mdl._generate_index([2], '## test') == [2, 1]
@@ -38,5 +45,4 @@ def test_calculate_new_index(mdl):
 def test_convert_mutiple_lines(mdh):
     mdlines = mdh._convert_to_mdlines(['one', '# two', 'three', '# four'])
 
-    assert [(mdline.index, mdline.line) for mdline in mdlines] == [([], 'one'), ([1], '# two'), ([1], 'three'), ([2], '# four')]
-
+    assert [(mdline.index, mdline.line) for mdline in mdlines] == [([], 'one'), ([1], '# two'), ([], 'three'), ([2], '# four')]

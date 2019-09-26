@@ -10,8 +10,10 @@ def mdh():
 
 @click.command()
 @click.argument('path')
-def dump(path):
-    MarkdownHelper(path=path).print()
+@click.option('--index/--no-index', default=False)
+@click.option('--debug/--no-debug', default=False)
+def dump(path, index, debug):
+    MarkdownHelper(path=path).dump(generate_index=index, debug=debug)
 
 
 if __name__ == '__main__':

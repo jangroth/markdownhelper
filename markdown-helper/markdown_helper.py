@@ -50,7 +50,7 @@ class MarkdownLine:
             elif current_level < previous_level:
                 return self._remove_current_and_bump_previous_level(previous_index)
         else:
-            return previous_index[:]
+            return []
 
     @property
     def line(self):
@@ -59,6 +59,10 @@ class MarkdownLine:
     @property
     def index(self):
         return self._index
+
+    @property
+    def anchor_name(self):
+        return '_'.join([str(i) for i in self._index])
 
 
 class MarkdownHelper:
@@ -76,10 +80,16 @@ class MarkdownHelper:
         current_index = []
         for line in lines:
             md_line = MarkdownLine(line=line.strip('\n'), previous_index=current_index)
-            current_index = md_line.index
+            if md_line.index:
+                current_index = md_line.index
             result.append(md_line)
         return result
 
-    def print(self):
+    def _print_line(self, md_line, generate_index, debug):
+        index = f'<a name="{md_line.anchor_name}"></a>\n' if generate_index and md_line.index else ''
+        debug = f'{md_line.index} - ' if debug and md_line.index else ''
+        print(f'{index}{debug}{md_line.line}')
+
+    def dump(self, generate_index=False, debug=False):
         for md_line in self.md_content:
-            print(md_line)
+            self._print_line(md_line, generate_index, debug)
