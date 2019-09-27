@@ -1,11 +1,16 @@
 import pytest
 
-from markdown_helper import MarkdownLine, MarkdownHelper
+from markdown_helper import MarkdownLine, MarkdownHelper, MarkdownDocument
 
 
 @pytest.fixture
 def mdl():
     return MarkdownLine.__new__(MarkdownLine)
+
+
+@pytest.fixture
+def mdd():
+    return MarkdownDocument.__new__(MarkdownDocument)
 
 
 @pytest.fixture
@@ -17,6 +22,7 @@ REMOVE_OLD_TOC = True
 WITH_ANCHOR = True
 WITHOUT_ANCHOR = False
 WITH_DEBUG = True
+
 
 def test_should_equal_and_not_equal():
     md1 = MarkdownLine('a')
@@ -71,20 +77,20 @@ def test_should_render_to_toc_entry():
     assert MarkdownLine('## a', [1]).to_toc_entry() == '  * [a](#1_1)'
 
 
-def test_cleanse_line(mdh):
-    assert list(mdh._cleansing_generator(['\n'])) == ['']
-    assert list(mdh._cleansing_generator(['abc'])) == ['abc']
-    assert list(mdh._cleansing_generator(['abc\n'])) == ['abc']
-    assert list(mdh._cleansing_generator(['## EC2 Autoscaling Concepts<a name="asc"></a>'])) == ['## EC2 Autoscaling Concepts<a name="asc"></a>']
-    assert list(mdh._cleansing_generator(['## EC2 Autoscaling Concepts<a name="asc"></a>'], REMOVE_OLD_TOC)) == ['## EC2 Autoscaling Concepts']
-    assert list(mdh._cleansing_generator(['[top](#top)'])) == ['[top](#top)']
-    assert list(mdh._cleansing_generator(['[top](#top)'], REMOVE_OLD_TOC)) == []
+def test_cleanse_line(mdd):
+    assert list(mdd._cleansing_generator(['\n'])) == ['']
+    assert list(mdd._cleansing_generator(['abc'])) == ['abc']
+    assert list(mdd._cleansing_generator(['abc\n'])) == ['abc']
+    assert list(mdd._cleansing_generator(['## EC2 Autoscaling Concepts<a name="asc"></a>'])) == ['## EC2 Autoscaling Concepts<a name="asc"></a>']
+    assert list(mdd._cleansing_generator(['## EC2 Autoscaling Concepts<a name="asc"></a>'], REMOVE_OLD_TOC)) == ['## EC2 Autoscaling Concepts']
+    assert list(mdd._cleansing_generator(['[top](#top)'])) == ['[top](#top)']
+    assert list(mdd._cleansing_generator(['[top](#top)'], REMOVE_OLD_TOC)) == []
 
 
-def test_cleanse_multiple_lines(mdh):
-    assert mdh._raw_to_cleansed(['[top](#top)', '# two<a name="foo"></a>'], REMOVE_OLD_TOC) == ['# two']
+def test_cleanse_multiple_lines(mdd):
+    assert mdd._raw_to_cleansed(['[top](#top)', '# two<a name="foo"></a>'], REMOVE_OLD_TOC) == ['# two']
 
 
-def test_convert_multiple_lines(mdh):
-    md_data = [(md_line.index, md_line.line) for md_line in mdh._cleansed_to_md(['one', '# two', 'three', '# four'])]
+def test_convert_multiple_lines(mdd):
+    md_data = [(md_line.index, md_line.line) for md_line in mdd._cleansed_to_md(['one', '# two', 'three', '# four'])]
     assert md_data == [([], 'one'), ([1], '# two'), ([], 'three'), ([2], '# four')]

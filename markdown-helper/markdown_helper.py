@@ -74,16 +74,13 @@ class MarkdownLine:
         return '_'.join([str(i) for i in self._index])
 
 
-class MarkdownHelper:
+class MarkdownDocument:
     REG_INTERNAL_ANCHOR = re.compile('<a.*name.*a>')
     REG_INTERNAL_LINK = re.compile('\\[.*\\]\\(#.*\\)')
 
-    def __init__(self, path):
-        self.raw_content = self._read_from_file(path)
-
-    def _read_from_file(self, path):
-        with open(path) as file:
-            return file.readlines()
+    def __init__(self, raw_lines, strip_old_toc=False):
+        cleansed_lines = self._raw_to_cleansed(raw_lines, strip_old_toc)
+        self.md_lines = self._cleansed_to_md(cleansed_lines)
 
     def _raw_to_cleansed(self, lines, strip_old_toc=False):
         return list(self._cleansing_generator(lines, strip_old_toc))
@@ -109,15 +106,27 @@ class MarkdownHelper:
             result.append(md_line)
         return result
 
-    def dump(self, generate_toc=False, strip_old_toc=False, debug=False):
-        cleansed_lines = self._raw_to_cleansed(self.raw_content, strip_old_toc)
-        md_lines = self._cleansed_to_md(cleansed_lines)
+    def dump(self, generate_toc=False, debug=False):
         if generate_toc:
             print('<a name="top"></a>')
             print('---')
-            for line in md_lines:
+            for line in self.md_lines:
                 if line.index:
                     print(line.to_toc_entry())
             print('---')
-        for md_line in md_lines:
+        for md_line in self.md_lines:
             print(md_line.to_markdown(generate_toc, debug))
+
+
+class MarkdownHelper:
+
+    def __init__(self, path):
+        self.raw_content = self._read_from_file(path)
+
+    def _read_from_file(self, path):
+        with open(path) as file:
+            return file.readlines()
+
+    def dump(self, generate_toc=False, strip_old_toc=False, debug=False):
+        md_document = MarkdownDocument(self.raw_content, strip_old_toc)
+        md_document.dump(generate_toc, debug)
