@@ -51,7 +51,19 @@ def test_calculate_new_index(mdl):
     assert mdl._generate_index([1, 2, 3], '## test') == [1, 3]
 
 
-def test_convert_mutiple_lines(mdh):
-    mdlines = mdh._convert_to_mdlines(['one', '# two', 'three', '# four'])
+def test_cleanse_line(mdh):
+    assert list(mdh._cleansing_generator(['\n'])) == ['']
+    assert list(mdh._cleansing_generator(['abc'])) == ['abc']
+    assert list(mdh._cleansing_generator(['abc\n'])) == ['abc']
+    assert list(mdh._cleansing_generator(['## EC2 Autoscaling Concepts<a name="asc"></a>'])) == ['## EC2 Autoscaling Concepts']
+    assert list(mdh._cleansing_generator(['[top](#top)test'])) == ['test']
+    assert list(mdh._cleansing_generator(['[top](#top)'])) == []
 
-    assert [(mdline.index, mdline.line) for mdline in mdlines] == [([], 'one'), ([1], '# two'), ([], 'three'), ([2], '# four')]
+
+def test_cleanse_multiple_lines(mdh):
+    assert mdh._raw_to_cleansed(['[top](#top)', '# two<a name="foo"></a>']) == ['# two']
+
+
+def test_convert_multiple_lines(mdh):
+    md_data = [(md_line.index, md_line.line) for md_line in mdh._cleansed_to_md(['one', '# two', 'three', '# four'])]
+    assert md_data == [([], 'one'), ([1], '# two'), ([], 'three'), ([2], '# four')]

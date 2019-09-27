@@ -2,7 +2,7 @@ import re
 
 
 class MarkdownLine:
-    HEADER_CHAR = re.compile('^#*')
+    REG_HEADER_CHAR = re.compile('^#*')
 
     def __init__(self, line, previous_index=[]):
         self._line = line
@@ -24,7 +24,7 @@ class MarkdownLine:
 
     @staticmethod
     def _get_header_level(line):
-        check = re.search(MarkdownLine.HEADER_CHAR, line)
+        check = re.search(MarkdownLine.REG_HEADER_CHAR, line)
         return check.span()[1] if check else 0
 
     @staticmethod
@@ -66,20 +66,38 @@ class MarkdownLine:
 
 
 class MarkdownHelper:
+    REG_INTERNAL_ANCHOR = re.compile('<a.*name.*a>')
+    REG_INTERNAL_LINK = re.compile('\\[.*\\]\\(#.*\\)')
+
     def __init__(self, path):
         self.path = path
         self.raw_content = self._read_from_file()
-        self.md_content = self._convert_to_mdlines(self.raw_content)
+        self.cleansed_content = self._raw_to_cleansed(self.raw_content)
+        self.md_content = self._cleansed_to_md(self.cleansed_content)
 
     def _read_from_file(self):
         with open(self.path) as file:
             return file.readlines()
 
-    def _convert_to_mdlines(self, lines):
+    def _raw_to_cleansed(self, lines):
+        return list(self._cleansing_generator(lines))
+
+    def _cleansing_generator(self, lines):
+        for line in lines:
+            line = line.strip('\n')
+            if line:
+                line = re.sub(self.REG_INTERNAL_ANCHOR, '', line)
+                line = re.sub(self.REG_INTERNAL_LINK, '', line)
+                if line:
+                    yield line
+            else:
+                yield line
+
+    def _cleansed_to_md(self, lines):
         result = []
         current_index = []
         for line in lines:
-            md_line = MarkdownLine(line=line.strip('\n'), previous_index=current_index)
+            md_line = MarkdownLine(line=line, previous_index=current_index)
             if md_line.index:
                 current_index = md_line.index
             result.append(md_line)
