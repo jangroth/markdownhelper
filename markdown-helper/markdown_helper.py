@@ -52,6 +52,15 @@ class MarkdownLine:
         else:
             return []
 
+    def to_markdown(self, with_anchor=False, debug=False):
+        top = f'\n[▲](#top)\n' if with_anchor and self.index else ''
+        anchor = f'<a name="{self.anchor_name}"></a>\n' if with_anchor and self.index else ''
+        debug = f'{self.index} - ' if debug and self.index else ''
+        return f'{top}{anchor}{debug}{self.line}'
+
+    def to_toc_entry(self):
+        return f'{"  " * (len(self.index) - 1)}* [{self.line.partition(" ")[2]}](#{self.anchor_name})' if self.index else self.line
+
     @property
     def line(self):
         return self._line
@@ -70,22 +79,19 @@ class MarkdownHelper:
     REG_INTERNAL_LINK = re.compile('\\[.*\\]\\(#.*\\)')
 
     def __init__(self, path):
-        self.path = path
-        self.raw_content = self._read_from_file()
-        self.cleansed_content = self._raw_to_cleansed(self.raw_content)
-        self.md_content = self._cleansed_to_md(self.cleansed_content)
+        self.raw_content = self._read_from_file(path)
 
-    def _read_from_file(self):
-        with open(self.path) as file:
+    def _read_from_file(self, path):
+        with open(path) as file:
             return file.readlines()
 
-    def _raw_to_cleansed(self, lines):
-        return list(self._cleansing_generator(lines))
+    def _raw_to_cleansed(self, lines, strip_old_toc=False):
+        return list(self._cleansing_generator(lines, strip_old_toc))
 
-    def _cleansing_generator(self, lines):
+    def _cleansing_generator(self, lines, strip_old_toc=False):
         for line in lines:
             line = line.strip('\n')
-            if line:
+            if strip_old_toc and line:
                 line = re.sub(self.REG_INTERNAL_ANCHOR, '', line)
                 line = re.sub(self.REG_INTERNAL_LINK, '', line)
                 if line:
@@ -103,20 +109,15 @@ class MarkdownHelper:
             result.append(md_line)
         return result
 
-    def _print_line(self, md_line, generate_anchors, debug):
-        anchor = f'<a name="{md_line.anchor_name}"></a>\n' if generate_anchors and md_line.index else ''
-        debug = f'{md_line.index} - ' if debug and md_line.index else ''
-        print(f'{anchor}{debug}{md_line.line}')
-
-    def _print_toc(self):
-        print('---')
-        for md_line in self.md_content:
-            if md_line.index:
-                print(f'{"  " * (len(md_line.index) - 1)}* [{md_line.line.partition(" ")[2]}](#{md_line.anchor_name})')
-        print('---')
-
-    def dump(self, generate_toc=False, debug=False):
-        for md_line in self.md_content:
-            self._print_line(md_line, generate_toc, debug)
+    def dump(self, generate_toc=False, strip_old_toc=False, debug=False):
+        cleansed_lines = self._raw_to_cleansed(self.raw_content, strip_old_toc)
+        md_lines = self._cleansed_to_md(cleansed_lines)
         if generate_toc:
-            self._print_toc()
+            print('<a name="top"></a>')
+            print('---')
+            for line in md_lines:
+                if line.index:
+                    print(line.to_toc_entry())
+            print('---')
+        for md_line in md_lines:
+            print(md_line.to_markdown(generate_toc, debug))

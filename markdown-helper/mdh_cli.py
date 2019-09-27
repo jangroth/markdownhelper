@@ -11,10 +11,10 @@ def mdh():
 @click.command()
 @click.argument('path')
 @click.option('--toc/--no-toc', default=False, help='Add toc')
-@click.option('--remove-toc/--no-remove-toc', default=False, help='Remove old toc and internal links')
+@click.option('--cleanse/--no-cleanse', default=False, help='Remove old toc and internal links')
 @click.option('--debug/--no-debug', default=False)
-def dump(path, toc, debug):
-    MarkdownHelper(path=path).dump(generate_toc=toc, debug=debug)
+def dump(path, toc, cleanse, debug):
+    MarkdownHelper(path=path).dump(generate_toc=toc, strip_old_toc=cleanse, debug=debug)
 
 
 if __name__ == '__main__':
