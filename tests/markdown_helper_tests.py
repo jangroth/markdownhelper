@@ -62,6 +62,15 @@ def test_calculate_new_index(mdl):
     assert mdl._generate_index([1, 2, 3], '## test') == [1, 3]
 
 
+def test_should_render_link_to_top():
+    assert MarkdownLine('a').link_to_top == '[▲](#top)'
+
+
+def test_should_render_link_to_previous():
+    assert MarkdownLine('### a', [1, 2]).link_to_previous == '[◄](#1_2)'
+    assert MarkdownLine('## a', [1, 2]).link_to_previous == '[◄](#1_2)'
+
+
 def test_should_render_to_markdown():
     assert MarkdownLine('a').to_markdown() == 'a'
     assert MarkdownLine('a').to_markdown(WITH_ANCHOR, WITH_DEBUG) == 'a'

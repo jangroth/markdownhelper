@@ -4,8 +4,10 @@ import re
 class MarkdownLine:
     REG_HEADER_CHAR = re.compile('^#*')
 
-    def __init__(self, line, previous_index=[]):
+    def __init__(self, line, previous_index=[], next_index=[]):
         self._line = line
+        self._previous_index = previous_index
+        self._next_index = next_index()
         self._index = self._generate_index(previous_index, line)
 
     def __str__(self):
@@ -53,10 +55,17 @@ class MarkdownLine:
             return []
 
     def to_markdown(self, with_anchor=False, debug=False):
-        top = f'\n[▲](#top)\n' if with_anchor and self.index else ''
-        anchor = f'<a name="{self.anchor_name}"></a>\n' if with_anchor and self.index else ''
-        debug = f'{self.index} - ' if debug and self.index else ''
-        return f'{top}{anchor}{debug}{self.line}'
+        if self.index:
+            prefix = f'<a name="{self.anchor_name}"></a>\n' if with_anchor else ''
+            prefix += '#' * len(self.index)
+            prefix += ' '
+            prefix += self.link_to_top
+            prefix += self.link_to_previous
+            prefix += f'{self.index} - ' if debug else ''
+            prefix += ' ' + self.line.partition(" ")[2]
+            return prefix
+        else:
+            return self.line
 
     def to_toc_entry(self):
         return f'{"  " * (len(self.index) - 1)}* [{self.line.partition(" ")[2]}](#{self.anchor_name})' if self.index else self.line
@@ -73,6 +82,17 @@ class MarkdownLine:
     def anchor_name(self):
         return '_'.join([str(i) for i in self._index])
 
+    @property
+    def link_to_top(self):
+        return '[▲](#top)'
+
+    @property
+    def link_to_previous(self):
+        if self.index[-1] == 1:
+            anchor = "_".join(str(i) for i in self.index[:-1])
+        else:
+            anchor = "_".join(str(i) for i in self._previous_index)
+        return f'[◄](#{anchor})'
 
 class MarkdownDocument:
     REG_INTERNAL_ANCHOR = re.compile('<a.*name.*a>')
