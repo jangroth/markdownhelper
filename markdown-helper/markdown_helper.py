@@ -95,15 +95,15 @@ class MarkdownLine:
 
     @property
     def link_to_top(self):
-        return '[▲](#top)'
+        return '[↖](#top)'
 
     @property
     def link_to_previous(self):
-        return f'[◄](#{self._to_anchor_name(self._previous_index)})'
+        return f'[↑](#{self._to_anchor_name(self._previous_index)})'
 
     @property
     def link_to_next(self):
-        return f'[►](#{self._to_anchor_name(self._previous_index)})'
+        return f'[↓](#{self._to_anchor_name(self._previous_index)})'
 
 
 class MarkdownDocument:
