@@ -34,9 +34,9 @@ def test_should_equal_and_not_equal():
 
 
 def test_should_create_anchor_name_from_index(mdl):
-    mdl._index = [1, 2]
+    mdl._current_index = [1, 2]
     assert mdl.anchor_name == '1_2'
-    mdl._index = []
+    mdl._current_index = []
     assert mdl.anchor_name == ''
 
 
