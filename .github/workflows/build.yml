@@ -12,4 +12,5 @@ jobs:
           python-version: '3.7'
           architecture: 'x64'
       - run: python --version
-      - run: python3 --version
+      - run: pip install pytest
+      - run: PYTHONPATH=markdown-helper:$PYTHONPATH pytest
