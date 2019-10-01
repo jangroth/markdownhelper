@@ -1,5 +1,7 @@
 # CLI Helper for Markdown (WIP)
 
+![](https://github.com/jangroth/markdownhelper/workflows/build/badge.svg)
+
 Adds table of contents to  markdown document. 
 
 Dump raw document:
