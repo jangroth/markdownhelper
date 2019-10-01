@@ -103,7 +103,7 @@ class MarkdownLine:
 
     @property
     def link_to_next(self):
-        return f'[↓](#{self._to_anchor_name(self._previous_index)})'
+        return f'[↓](#{self._to_anchor_name(self._next_index)})'
 
 
 class MarkdownDocument:
@@ -147,8 +147,7 @@ class MarkdownDocument:
                 line.set_next_index(current_index)
                 current_index = line.index
             result.append(line)
-        return result
-
+        return result[::-1]
 
     def dump(self, generate_toc=False, debug=False):
         if generate_toc:

@@ -103,3 +103,9 @@ def test_cleanse_multiple_lines(mdd):
 def test_convert_multiple_lines(mdd):
     md_data = [(md_line.index, md_line.line) for md_line in mdd._cleansed_to_md(['one', '# two', 'three', '# four'])]
     assert md_data == [((), 'one'), ((1,), '# two'), ((), 'three'), ((2,), '# four')]
+
+
+def test_add_next_indices_to_md(mdd):
+    md_lines = mdd._cleansed_to_md(['one', '# two', 'three', '# four'])
+    md_lines_with_next_indices = mdd._add_next_indices_to_md(md_lines)
+    assert md_lines_with_next_indices[1]._next_index == (2,)
