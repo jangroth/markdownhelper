@@ -97,7 +97,7 @@ def test_cleanse_line(mdd):
 
 
 def test_cleanse_multiple_lines(mdd):
-    assert mdd._raw_to_cleansed(['[top](#top)', '# two<a name="foo"></a>'], REMOVE_OLD_TOC) == ['# two']
+    assert mdd._raw_to_be_cleansed(['[top](#top)', '# two<a name="foo"></a>'], REMOVE_OLD_TOC) == ['# two']
 
 
 def test_convert_multiple_lines(mdd):

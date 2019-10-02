@@ -111,11 +111,11 @@ class MarkdownDocument:
     REG_INTERNAL_LINK = re.compile('\\[.*\\]\\(#.*\\)')
 
     def __init__(self, raw_lines, strip_old_toc=False):
-        cleansed_lines = self._raw_to_cleansed(raw_lines, strip_old_toc)
+        cleansed_lines = self._raw_to_be_cleansed(raw_lines, strip_old_toc)
         md_lines_with_previous_index = self._cleansed_to_md(cleansed_lines)
         self.md_lines = self._add_next_indices_to_md(md_lines_with_previous_index)
 
-    def _raw_to_cleansed(self, lines, strip_old_toc=False):
+    def _raw_to_be_cleansed(self, lines, strip_old_toc=False):
         return list(self._cleansing_generator(lines, strip_old_toc))
 
     def _cleansing_generator(self, lines, strip_old_toc=False):
