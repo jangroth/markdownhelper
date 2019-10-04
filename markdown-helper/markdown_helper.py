@@ -107,26 +107,22 @@ class MarkdownLine:
 
 
 class MarkdownDocument:
+    REG_SPACER_BETWEEN_HEADER_AND_LINK = re.compile('(?<=#) (?=\\[)')
     REG_INTERNAL_ANCHOR = re.compile('<a.*name.*a>')
     REG_INTERNAL_LINK = re.compile('\\[.*\\]\\(#.*\\)')
 
-    def __init__(self, raw_lines, strip_old_toc=False):
-        cleansed_lines = self._raw_to_be_cleansed(raw_lines, strip_old_toc)
-        md_lines_with_previous_index = self._cleansed_to_md(cleansed_lines)
+    def __init__(self, lines, strip_old_toc=False):
+        if strip_old_toc:
+            lines = list(self._cleansing_generator(lines))
+        md_lines_with_previous_index = self._cleansed_to_md(lines)
         self.md_lines = self._add_next_indices_to_md(md_lines_with_previous_index)
 
-    def _raw_to_be_cleansed(self, lines, strip_old_toc=False):
-        return list(self._cleansing_generator(lines, strip_old_toc))
-
-    def _cleansing_generator(self, lines, strip_old_toc=False):
+    def _cleansing_generator(self, lines):
         for line in lines:
-            line = line.strip('\n')
-            if strip_old_toc and line:
-                line = re.sub(self.REG_INTERNAL_ANCHOR, '', line)
-                line = re.sub(self.REG_INTERNAL_LINK, '', line)
-                if line:
-                    yield line
-            else:
+            line = re.sub(self.REG_SPACER_BETWEEN_HEADER_AND_LINK, '', line)
+            line = re.sub(self.REG_INTERNAL_ANCHOR, '', line)
+            line = re.sub(self.REG_INTERNAL_LINK, '', line)
+            if line:
                 yield line
 
     def _cleansed_to_md(self, lines):
@@ -166,9 +162,10 @@ class MarkdownHelper:
     def __init__(self, path):
         self.raw_content = self._read_from_file(path)
 
-    def _read_from_file(self, path):
+    @staticmethod
+    def _read_from_file(path):
         with open(path) as file:
-            return file.readlines()
+            return [line.rstrip('\n') for line in file]
 
     def dump(self, generate_toc=False, strip_old_toc=False, debug=False):
         md_document = MarkdownDocument(self.raw_content, strip_old_toc)

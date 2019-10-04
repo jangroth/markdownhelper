@@ -86,18 +86,18 @@ def test_should_render_to_toc_entry():
     assert MarkdownLine('## a', [1]).to_toc_entry() == '  * [a](#1_1)'
 
 
-def test_cleanse_line(mdd):
-    assert list(mdd._cleansing_generator(['\n'])) == ['']
+def test_dont_cleanse_text_line(mdd):
     assert list(mdd._cleansing_generator(['abc'])) == ['abc']
-    assert list(mdd._cleansing_generator(['abc\n'])) == ['abc']
-    assert list(mdd._cleansing_generator(['## EC2 Autoscaling Concepts<a name="asc"></a>'])) == ['## EC2 Autoscaling Concepts<a name="asc"></a>']
-    assert list(mdd._cleansing_generator(['## EC2 Autoscaling Concepts<a name="asc"></a>'], REMOVE_OLD_TOC)) == ['## EC2 Autoscaling Concepts']
-    assert list(mdd._cleansing_generator(['[top](#top)'])) == ['[top](#top)']
-    assert list(mdd._cleansing_generator(['[top](#top)'], REMOVE_OLD_TOC)) == []
+
+
+def test_cleanse_markdown_line_back_to_original(mdd):
+    md_lines = MarkdownLine('# abc').to_markdown(WITH_ANCHOR).split('\n')
+    assert list(mdd._cleansing_generator(md_lines)) == ['# abc']
 
 
 def test_cleanse_multiple_lines(mdd):
-    assert mdd._raw_to_be_cleansed(['[top](#top)', '# two<a name="foo"></a>'], REMOVE_OLD_TOC) == ['# two']
+    lines = ['[top](#top)', '# two<a name="foo"></a>']
+    assert list(mdd._cleansing_generator(lines)) == ['# two']
 
 
 def test_convert_multiple_lines(mdd):

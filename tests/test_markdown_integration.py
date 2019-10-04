@@ -1,7 +1,6 @@
 import os
 
 import pytest
-
 from markdown_helper import MarkdownHelper
 
 
@@ -11,13 +10,16 @@ def mdh():
 
 
 def test_should_add_and_remove_toc(mdh, capsys, tmp_path):
-    mdh.dump()
-    out1, _ = capsys.readouterr()
+    mdh.dump(generate_toc=False)
+    out_without_toc, _ = capsys.readouterr()
+    mdh.dump(generate_toc=True)
+    out_with_toc, _ = capsys.readouterr()
+
     path = os.path.join(tmp_path, 'simple_with_toc.md')
     with open(path, "w+") as testfile:
-        testfile.write(out1)
+        testfile.write(out_with_toc)
 
-    MarkdownHelper(path).dump()
-    out2, _ = capsys.readouterr()
+    MarkdownHelper(path).dump(strip_old_toc=True)
+    result, _ = capsys.readouterr()
 
-    assert out1 == out2
+    assert result == out_without_toc
