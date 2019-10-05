@@ -6,7 +6,7 @@ from markdown_helper import MarkdownHelper
 
 @pytest.fixture
 def mdh():
-    return MarkdownHelper('resources/simple.md')
+    return MarkdownHelper('tests/resources/simple.md')
 
 
 def test_should_add_and_remove_toc(mdh, capsys, tmp_path):
