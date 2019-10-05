@@ -65,8 +65,8 @@ class MarkdownLine:
         self._next_index = next_index
 
     def to_markdown(self, with_anchor=False, debug=False):
-        if self.index:
-            prefix = f'<a name="{self.anchor_name}"></a>\n' if with_anchor else ''
+        if with_anchor and self.index:
+            prefix = f'<a name="{self.anchor_name}"></a>\n'
             prefix += '#' * len(self.index)
             prefix += ' '
             prefix += self.link_to_top
@@ -120,13 +120,17 @@ class MarkdownDocument:
     def _cleansing_generator(self, lines):
         lines = self._remove_old_toc(lines)
         for line in lines:
-            line = re.sub(self.REG_SPACER_BETWEEN_HEADER_AND_LINK, '', line)
-            line = re.sub(self.REG_INTERNAL_ANCHOR, '', line)
-            line = re.sub(self.REG_INTERNAL_LINK, '', line)
-            if line:
+            if line != '':
+                line = re.sub(self.REG_SPACER_BETWEEN_HEADER_AND_LINK, '', line)
+                line = re.sub(self.REG_INTERNAL_ANCHOR, '', line)
+                line = re.sub(self.REG_INTERNAL_LINK, '', line)
+                if line:
+                    yield line
+            else:
                 yield line
 
-    def _remove_old_toc(self, lines):
+    @staticmethod
+    def _remove_old_toc(lines):
         try:
             start = lines.index('[toc_start]::')
             end = lines.index('[toc_end]::')
@@ -136,7 +140,8 @@ class MarkdownDocument:
             pass
         return lines
 
-    def _cleansed_to_md(self, lines):
+    @staticmethod
+    def _cleansed_to_md(lines):
         result = []
         current_index = ()
         for line in lines:
@@ -146,7 +151,8 @@ class MarkdownDocument:
             result.append(md_line)
         return result
 
-    def _add_next_indices_to_md(self, md_lines):
+    @staticmethod
+    def _add_next_indices_to_md(md_lines):
         result = []
         current_index = ()
         for line in reversed(md_lines):

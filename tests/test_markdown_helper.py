@@ -74,8 +74,7 @@ def test_should_render_link_to_previous():
 def test_should_render_to_markdown():
     assert MarkdownLine('a').to_markdown() == 'a'
     assert MarkdownLine('a').to_markdown(WITH_ANCHOR, WITH_DEBUG) == 'a'
-    assert MarkdownLine('# 1').to_markdown() == '# [↖](#top)[↑](#)[↓](#) 1'
-    assert MarkdownLine('# 1').to_markdown(WITHOUT_ANCHOR, WITH_DEBUG) == '# [↖](#top)[↑](#)[↓](#)(1,) -  1'
+    assert MarkdownLine('# 1').to_markdown() == '# 1'
     assert MarkdownLine('# 1').to_markdown(WITH_ANCHOR, WITH_DEBUG) == '<a name="1"></a>\n# [↖](#top)[↑](#)[↓](#)(1,) -  1'
     assert MarkdownLine('# 1').to_markdown(WITH_ANCHOR) == '<a name="1"></a>\n# [↖](#top)[↑](#)[↓](#) 1'
 
@@ -88,6 +87,7 @@ def test_should_render_to_toc_entry():
 
 def test_dont_cleanse_text_line(mdd):
     assert list(mdd._cleansing_generator(['abc'])) == ['abc']
+    assert list(mdd._cleansing_generator([''])) == ['']
 
 
 def test_cleanse_markdown_line_back_to_original(mdd):
