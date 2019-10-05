@@ -93,6 +93,13 @@ def test_dont_cleanse_text_line(mdd):
 def test_cleanse_markdown_line_back_to_original(mdd):
     md_lines = MarkdownLine('# abc').to_markdown(WITH_ANCHOR).split('\n')
     assert list(mdd._cleansing_generator(md_lines)) == ['# abc']
+    md_lines = MarkdownLine('## abc', (1, 1), (1, 3)).to_markdown(WITH_ANCHOR).split('\n')
+    assert list(mdd._cleansing_generator(md_lines)) == ['## abc']
+
+
+def test_cleanse_old_toc(mdd):
+    lines = ['before', '', '[toc_start]::', 'foobar', '', '[toc_end]::', 'after']
+    assert mdd._remove_old_toc(lines) == ['before', 'after']
 
 
 def test_cleanse_multiple_lines(mdd):

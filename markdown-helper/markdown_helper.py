@@ -118,12 +118,23 @@ class MarkdownDocument:
         self.md_lines = self._add_next_indices_to_md(md_lines_with_previous_index)
 
     def _cleansing_generator(self, lines):
+        lines = self._remove_old_toc(lines)
         for line in lines:
             line = re.sub(self.REG_SPACER_BETWEEN_HEADER_AND_LINK, '', line)
             line = re.sub(self.REG_INTERNAL_ANCHOR, '', line)
             line = re.sub(self.REG_INTERNAL_LINK, '', line)
             if line:
                 yield line
+
+    def _remove_old_toc(self, lines):
+        try:
+            start = lines.index('[toc_start]::')
+            end = lines.index('[toc_end]::')
+            if lines[start - 1] == '' and lines[end - 1] == '':
+                lines = [line for index, line in enumerate(lines) if index < start - 1 or index > end]
+        except ValueError:
+            pass
+        return lines
 
     def _cleansed_to_md(self, lines):
         result = []
@@ -147,12 +158,14 @@ class MarkdownDocument:
 
     def dump(self, generate_toc=False, debug=False):
         if generate_toc:
+            print('\n[toc_start]::')
             print('<a name="top"></a>')
             print('---')
             for line in self.md_lines:
                 if line.index:
                     print(line.to_toc_entry())
             print('---')
+            print('\n[toc_end]::')
         for md_line in self.md_lines:
             print(md_line.to_markdown(generate_toc, debug))
 

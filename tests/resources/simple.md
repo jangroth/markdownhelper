@@ -1,6 +1,9 @@
+
+[toc start]::
 Lorem ipsum dolor sit amet, no pro virtute appellantur mediocritatem. Harum everti 
 laboramus at sit, in bonorum nostrum pro. Wisi adipisci molestiae eum te, ea vis.
 
+[toc end]::
 # Ea commodo eruditi
 At quot assum soleat ius. Has an sale aperiri splendide. Cu sed vidisse forensibus,
 per amet nibh consectetuer eu, quo ei homero noster admodum. Ut pri ludus pericula 
