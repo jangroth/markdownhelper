@@ -189,3 +189,11 @@ class MarkdownHelper:
     def dump(self, generate_toc=False, strip_old_toc=False, debug=False):
         md_document = MarkdownDocument(self.raw_content, strip_old_toc)
         md_document.dump(generate_toc, debug)
+
+    def cleanse(self):
+        md_document = MarkdownDocument(self.raw_content, strip_old_toc=True)
+        md_document.dump()
+
+    def add_toc(self):
+        md_document = MarkdownDocument(self.raw_content)
+        md_document.dump(generate_toc=True)
