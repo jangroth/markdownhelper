@@ -2,54 +2,45 @@
 
 # CLI Helper for Markdown (WIP)
 
-Adds table of contents to  markdown document. 
+Adds or removes table of contents to  markdown document. 
 
-Dump raw document:
 ```bash
-./bin/mdh dump tests/resources/simple.md
-one
-# two
-three
-## four
-five
-## six
-seven
-# eight
-nine
+./bin/mdh --help
+Usage: mdh_cli.py [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  cleanse  Removes existing TOC and all internal links
+  dump     Dumps markdown document to console
+  toc      Adds TOC to top of file
 ```
 
-Add TOC:
+## Usage
+
+Dump existing document:
 
 ```bash
-./bin/mdh dump tests/resources/simple.md --toc
-<a name="top"></a>
----
-* [two](#1)
-  * [four](#1_1)
-  * [six](#1_2)
-* [eight](#2)
----
-one
+./bin/mdh dump tests/resources/simple.md 
+```
 
-[▲](#top)
-<a name="1"></a>
-# two
-three
+If necessary, remove old TOC:
 
-[▲](#top)
-<a name="1_1"></a>
-## four
-five
+```bash
+./bin/mdh cleanse tests/resources/simple.md 
+```
 
-[▲](#top)
-<a name="1_2"></a>
-## six
-seven
+Add new TOC:
 
-[▲](#top)
-<a name="2"></a>
-# eight
-nine
+```bash
+./bin/mdh toc tests/resources/simple.md 
+```
+
+Optionally, add navigation arrows to headers:
+
+```bash
+./bin/mdh toc --navigation tests/resources/simple.md 
 ```
 
 ## Screenshots
