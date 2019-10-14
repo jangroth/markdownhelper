@@ -12,7 +12,7 @@ def mdh():
 @click.argument('path')
 @click.option('--debug/--no-debug', default=False, help='Displays debug information')
 def dump(path, debug):
-    MarkdownHelper(path=path).dump(generate_toc=False, strip_old_toc=False, debug=debug)
+    MarkdownHelper(path=path).dump(add_toc=False, remove_old_toc=False, with_debug=debug)
 
 
 @click.command(help='Removes existing TOC and all internal links')
@@ -23,8 +23,9 @@ def cleanse(path):
 
 @click.command(help='Adds TOC to top of file')
 @click.argument('path')
-def toc(path):
-    MarkdownHelper(path=path).add_toc()
+@click.option('--navigation/--no-navigation', default=False, help='Adds navigation links to headers')
+def toc(path, navigation):
+    MarkdownHelper(path=path).add_toc(add_navigation=navigation)
 
 
 if __name__ == '__main__':

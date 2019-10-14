@@ -18,12 +18,6 @@ def mdh():
     return MarkdownHelper.__new__(MarkdownHelper)
 
 
-REMOVE_OLD_TOC = True
-WITH_ANCHOR = True
-WITHOUT_ANCHOR = False
-WITH_DEBUG = True
-
-
 def test_should_equal_and_not_equal():
     md1 = MarkdownLine('a')
     md2 = MarkdownLine('a')
@@ -42,8 +36,8 @@ def test_should_create_anchor_name_from_index(mdl):
 
 def test_should_get_header_level_from_line(mdl):
     assert mdl._get_header_level('') == 0
-    assert mdl._get_header_level('# adsf') == 1
-    assert mdl._get_header_level('## adsf') == 2
+    assert mdl._get_header_level('# test') == 1
+    assert mdl._get_header_level('## test') == 2
     assert mdl._get_header_level('# #') == 1
     assert mdl._get_header_level(' ##') == 0
 
@@ -73,10 +67,11 @@ def test_should_render_link_to_previous():
 
 def test_should_render_to_markdown():
     assert MarkdownLine('a').to_markdown() == 'a'
-    assert MarkdownLine('a').to_markdown(WITH_ANCHOR, WITH_DEBUG) == 'a'
+    assert MarkdownLine('a').to_markdown(with_anchor=True, with_navigation=True) == 'a'
     assert MarkdownLine('# 1').to_markdown() == '# 1'
-    assert MarkdownLine('# 1').to_markdown(WITH_ANCHOR, WITH_DEBUG) == '<a name="1"></a>\n# [↖](#top)[↑](#)[↓](#)(1,) -  1'
-    assert MarkdownLine('# 1').to_markdown(WITH_ANCHOR) == '<a name="1"></a>\n# [↖](#top)[↑](#)[↓](#) 1'
+    assert MarkdownLine('# 1').to_markdown(with_anchor=True) == '<a name="1"></a>\n# 1'
+    assert MarkdownLine('# 1').to_markdown(with_anchor=True, with_navigation=True) == '<a name="1"></a>\n# [↖](#top)[↑](#)[↓](#) 1'
+    assert MarkdownLine('# 1').to_markdown(with_anchor=True, with_navigation=True, with_debug=True) == '<a name="1"></a>\n# [↖](#top)[↑](#)[↓](#)(1,) -  1'
 
 
 def test_should_render_to_toc_entry():
@@ -91,9 +86,9 @@ def test_dont_cleanse_text_line(mdd):
 
 
 def test_cleanse_markdown_line_back_to_original(mdd):
-    md_lines = MarkdownLine('# abc').to_markdown(WITH_ANCHOR).split('\n')
+    md_lines = MarkdownLine('# abc').to_markdown(with_anchor=True).split('\n')
     assert list(mdd._cleansing_generator(md_lines)) == ['# abc']
-    md_lines = MarkdownLine('## abc', (1, 1), (1, 3)).to_markdown(WITH_ANCHOR).split('\n')
+    md_lines = MarkdownLine('## abc', (1, 1), (1, 3)).to_markdown(with_anchor=True).split('\n')
     assert list(mdd._cleansing_generator(md_lines)) == ['## abc']
 
 

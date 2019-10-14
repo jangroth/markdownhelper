@@ -64,15 +64,16 @@ class MarkdownLine:
     def set_next_index(self, next_index):
         self._next_index = next_index
 
-    def to_markdown(self, with_anchor=False, debug=False):
+    def to_markdown(self, with_anchor=False, with_navigation=False, with_debug=False):
         if with_anchor and self.index:
             prefix = f'<a name="{self.anchor_name}"></a>\n'
             prefix += '#' * len(self.index)
-            prefix += ' '
-            prefix += self.link_to_top
-            prefix += self.link_to_previous
-            prefix += self.link_to_next
-            prefix += f'{self.index} - ' if debug else ''
+            if with_navigation:
+                prefix += ' '
+                prefix += self.link_to_top
+                prefix += self.link_to_previous
+                prefix += self.link_to_next
+            prefix += f'{self.index} - ' if with_debug else ''
             prefix += ' ' + self.line.partition(" ")[2]
             return prefix
         else:
@@ -111,8 +112,8 @@ class MarkdownDocument:
     REG_INTERNAL_ANCHOR = re.compile('<a.*name.*a>')
     REG_INTERNAL_LINK = re.compile('\\[.*\\]\\(#.*\\)')
 
-    def __init__(self, lines, strip_old_toc=False):
-        if strip_old_toc:
+    def __init__(self, lines, remove_old_toc=False):
+        if remove_old_toc:
             lines = list(self._cleansing_generator(lines))
         md_lines_with_previous_index = self._cleansed_to_md(lines)
         self.md_lines = self._add_next_indices_to_md(md_lines_with_previous_index)
@@ -162,8 +163,8 @@ class MarkdownDocument:
             result.append(line)
         return result[::-1]
 
-    def dump(self, generate_toc=False, debug=False):
-        if generate_toc:
+    def dump(self, add_toc=False, add_navigation=False, with_debug=False):
+        if add_toc:
             print('\n[toc_start]::')
             print('<a name="top"></a>')
             print('---')
@@ -173,7 +174,7 @@ class MarkdownDocument:
             print('---')
             print('\n[toc_end]::')
         for md_line in self.md_lines:
-            print(md_line.to_markdown(generate_toc, debug))
+            print(md_line.to_markdown(with_anchor=add_toc, with_navigation=add_navigation, with_debug=with_debug))
 
 
 class MarkdownHelper:
@@ -186,14 +187,14 @@ class MarkdownHelper:
         with open(path) as file:
             return [line.rstrip('\n') for line in file]
 
-    def dump(self, generate_toc=False, strip_old_toc=False, debug=False):
-        md_document = MarkdownDocument(self.raw_content, strip_old_toc)
-        md_document.dump(generate_toc, debug)
+    def dump(self, add_toc=False, remove_old_toc=False, with_debug=False):
+        md_document = MarkdownDocument(lines=self.raw_content, remove_old_toc=remove_old_toc)
+        md_document.dump(add_toc=add_toc, with_debug=with_debug)
 
     def cleanse(self):
-        md_document = MarkdownDocument(self.raw_content, strip_old_toc=True)
+        md_document = MarkdownDocument(lines=self.raw_content, remove_old_toc=True)
         md_document.dump()
 
-    def add_toc(self):
-        md_document = MarkdownDocument(self.raw_content)
-        md_document.dump(generate_toc=True)
+    def add_toc(self, add_navigation=False):
+        md_document = MarkdownDocument(lines=self.raw_content)
+        md_document.dump(add_toc=True, add_navigation=add_navigation)
