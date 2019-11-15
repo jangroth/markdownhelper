@@ -111,6 +111,8 @@ class MarkdownDocument:
     REG_SPACER_BETWEEN_HEADER_AND_LINK = re.compile('(?<=#) (?=\\[)')
     REG_INTERNAL_ANCHOR = re.compile('<a.*name.*a>')
     REG_INTERNAL_LINK = re.compile('\\[.*\\]\\(#.*\\)')
+    TOC_START = ['[toc_start]::', '<a name="top"></a>', '---']
+    TOC_END = ['---', '[toc_end]::']
 
     def __init__(self, lines, remove_old_toc=False):
         if remove_old_toc:
@@ -163,16 +165,22 @@ class MarkdownDocument:
             result.append(line)
         return result[::-1]
 
-    def dump(self, add_toc=False, add_navigation=False, with_debug=False):
+    @staticmethod
+    def _should_print_toc_line(line, max_level):
+        result = False
+        if line.index:
+            if max_level == 0 or len(line.index) <= max_level:
+                result = True
+        return result
+
+    def dump(self, add_toc=False, add_navigation=False, max_level=0, with_debug=False):
+        output = []
         if add_toc:
-            print('\n[toc_start]::')
-            print('<a name="top"></a>')
-            print('---')
+            output.append(self.TOC_START)
             for line in self.md_lines:
-                if line.index:
+                if self._should_print_toc_line(line, max_level):
                     print(line.to_toc_entry())
-            print('---')
-            print('\n[toc_end]::')
+            print(self.TOC_END)
         for md_line in self.md_lines:
             print(md_line.to_markdown(with_anchor=add_toc, with_navigation=add_navigation, with_debug=with_debug))
 
@@ -195,6 +203,6 @@ class MarkdownHelper:
         md_document = MarkdownDocument(lines=self.raw_content, remove_old_toc=True)
         md_document.dump()
 
-    def add_toc(self, add_navigation=False):
+    def add_toc(self, add_navigation=False, max_level=0):
         md_document = MarkdownDocument(lines=self.raw_content)
-        md_document.dump(add_toc=True, add_navigation=add_navigation)
+        md_document.dump(add_toc=True, add_navigation=add_navigation, max_level=max_level)

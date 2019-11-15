@@ -111,3 +111,10 @@ def test_add_next_indices_to_md(mdd):
     md_lines = mdd._cleansed_to_md(['one', '# two', 'three', '# four'])
     md_lines_with_next_indices = mdd._add_next_indices_to_md(md_lines)
     assert md_lines_with_next_indices[1]._next_index == (2,)
+
+
+def test_dump_with_debug(mdh):
+    mdh.raw_content = ["# test"]
+    # TODO
+
+    #S85*u43q4#Uut3!T6jj#Z^dw
