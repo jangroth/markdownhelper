@@ -66,12 +66,12 @@ def test_should_render_link_to_previous():
 
 
 def test_should_render_to_markdown():
-    assert MarkdownLine('a').to_markdown() == 'a'
-    assert MarkdownLine('a').to_markdown(with_anchor=True, with_navigation=True) == 'a'
-    assert MarkdownLine('# 1').to_markdown() == '# 1'
-    assert MarkdownLine('# 1').to_markdown(with_anchor=True) == '<a name="1"></a>\n# 1'
-    assert MarkdownLine('# 1').to_markdown(with_anchor=True, with_navigation=True) == '<a name="1"></a>\n# [↖](#top)[↑](#)[↓](#) 1'
-    assert MarkdownLine('# 1').to_markdown(with_anchor=True, with_navigation=True, with_debug=True) == '<a name="1"></a>\n# [↖](#top)[↑](#)[↓](#)(1,) -  1'
+    assert MarkdownLine('a').to_markdown() == ['a']
+    assert MarkdownLine('a').to_markdown(with_anchor=True, with_navigation=True) == ['a']
+    assert MarkdownLine('# 1').to_markdown() == ['# 1']
+    assert MarkdownLine('# 1').to_markdown(with_anchor=True) == ['<a name="1"></a>', '# 1']
+    assert MarkdownLine('# 1').to_markdown(with_anchor=True, with_navigation=True) == ['<a name="1"></a>','# [↖](#top)[↑](#)[↓](#) 1']
+    assert MarkdownLine('# 1').to_markdown(with_anchor=True, with_navigation=True, with_debug=True) == ['<a name="1"></a>','# [↖](#top)[↑](#)[↓](#)(1,) -  1']
 
 
 def test_should_render_to_toc_entry():
@@ -86,9 +86,9 @@ def test_dont_cleanse_text_line(mdd):
 
 
 def test_cleanse_markdown_line_back_to_original(mdd):
-    md_lines = MarkdownLine('# abc').to_markdown(with_anchor=True).split('\n')
+    md_lines = MarkdownLine('# abc').to_markdown(with_anchor=True)
     assert list(mdd._cleansing_generator(md_lines)) == ['# abc']
-    md_lines = MarkdownLine('## abc', (1, 1), (1, 3)).to_markdown(with_anchor=True).split('\n')
+    md_lines = MarkdownLine('## abc', (1, 1), (1, 3)).to_markdown(with_anchor=True)
     assert list(mdd._cleansing_generator(md_lines)) == ['## abc']
 
 
@@ -115,6 +115,3 @@ def test_add_next_indices_to_md(mdd):
 
 def test_dump_with_debug(mdh):
     mdh.raw_content = ["# test"]
-    # TODO
-
-    #S85*u43q4#Uut3!T6jj#Z^dw

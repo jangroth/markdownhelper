@@ -66,18 +66,18 @@ class MarkdownLine:
 
     def to_markdown(self, with_anchor=False, with_navigation=False, with_debug=False):
         if with_anchor and self.index:
-            prefix = f'<a name="{self.anchor_name}"></a>\n'
-            prefix += '#' * len(self.index)
+            pre_line = f'<a name="{self.anchor_name}"></a>'
+            line = '#' * len(self.index)
             if with_navigation:
-                prefix += ' '
-                prefix += self.link_to_top
-                prefix += self.link_to_previous
-                prefix += self.link_to_next
-            prefix += f'{self.index} - ' if with_debug else ''
-            prefix += ' ' + self.line.partition(" ")[2]
-            return prefix
+                line += ' '
+                line += self.link_to_top
+                line += self.link_to_previous
+                line += self.link_to_next
+            line += f'{self.index} - ' if with_debug else ''
+            line += ' ' + self.line.partition(" ")[2]
+            return [pre_line, line]
         else:
-            return self.line
+            return [self.line]
 
     def to_toc_entry(self):
         return f'{"  " * (len(self.index) - 1)}* [{self.line.partition(" ")[2]}](#{self._to_anchor_name(self._current_index)})' if self.index else self.line
@@ -174,15 +174,15 @@ class MarkdownDocument:
         return result
 
     def dump(self, add_toc=False, add_navigation=False, max_level=0, with_debug=False):
-        output = []
+        lines = []
         if add_toc:
-            output.append(self.TOC_START)
+            lines.append(self.TOC_START)
             for line in self.md_lines:
                 if self._should_print_toc_line(line, max_level):
-                    print(line.to_toc_entry())
-            print(self.TOC_END)
+                    lines.append(line.to_toc_entry())
+            lines.append(self.TOC_END)
         for md_line in self.md_lines:
-            print(md_line.to_markdown(with_anchor=add_toc, with_navigation=add_navigation, with_debug=with_debug))
+            lines.append(md_line.to_markdown(with_anchor=add_toc, with_navigation=add_navigation, with_debug=with_debug))
 
 
 class MarkdownHelper:
