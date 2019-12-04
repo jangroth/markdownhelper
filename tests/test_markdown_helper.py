@@ -55,6 +55,8 @@ def test_calculate_new_index(mdl):
     assert mdl._generate_index((1, 2), '# test') == (2,)
     assert mdl._generate_index((1, 2, 3), '## test') == (1, 3)
 
+    assert mdl._generate_index((2, 1, 6, 7), '## test') == (2, 2)
+
 
 def test_should_render_link_to_top():
     assert MarkdownLine('a').link_to_top == '[↖](#top)'
@@ -70,8 +72,8 @@ def test_should_render_to_markdown():
     assert MarkdownLine('a').to_markdown(with_anchor=True, with_navigation=True) == ['a']
     assert MarkdownLine('# 1').to_markdown() == ['# 1']
     assert MarkdownLine('# 1').to_markdown(with_anchor=True) == ['<a name="1"></a>', '# 1']
-    assert MarkdownLine('# 1').to_markdown(with_anchor=True, with_navigation=True) == ['<a name="1"></a>','# [↖](#top)[↑](#)[↓](#) 1']
-    assert MarkdownLine('# 1').to_markdown(with_anchor=True, with_navigation=True, with_debug=True) == ['<a name="1"></a>','# [↖](#top)[↑](#)[↓](#)(1,) -  1']
+    assert MarkdownLine('# 1').to_markdown(with_anchor=True, with_navigation=True) == ['<a name="1"></a>', '# [↖](#top)[↑](#)[↓](#) 1']
+    assert MarkdownLine('# 1').to_markdown(with_anchor=True, with_navigation=True, with_debug=True) == ['<a name="1"></a>', '# [↖](#top)[↑](#)[↓](#)(1,) 1']
 
 
 def test_should_render_to_toc_entry():
@@ -93,7 +95,7 @@ def test_cleanse_markdown_line_back_to_original(mdd):
 
 
 def test_cleanse_old_toc(mdd):
-    lines = ['before', '', '[toc_start]::', 'foobar', '', '[toc_end]::', 'after']
+    lines = ['before', '[toc_start]::', 'foobar', '', '[toc_end]::', 'after']
     assert mdd._remove_old_toc(lines) == ['before', 'after']
 
 
@@ -113,5 +115,9 @@ def test_add_next_indices_to_md(mdd):
     assert md_lines_with_next_indices[1]._next_index == (2,)
 
 
-def test_dump_with_debug(mdh):
-    mdh.raw_content = ["# test"]
+def test_dump_returns_flat_list_of_lines(mdd):
+    mdd.md_lines = mdd._cleansed_to_md(['one', '# two'])
+
+    assert mdd.dump(with_debug=True) == ['one', '(1,)# two']
+    assert mdd.dump() == ['one', '# two']
+    assert mdd.dump(add_toc=True) == ['[toc_start]::', '<a name="top"></a>', '---', '* [two](#1)', '---', '[toc_end]::', 'one', '<a name="1"></a>', '# two']

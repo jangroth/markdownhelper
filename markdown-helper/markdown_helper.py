@@ -39,9 +39,10 @@ class MarkdownLine:
             if current_level > previous_level:
                 return self._add_new_level(previous_index)
             elif current_level == previous_level:
-                return self._bump_current_level(previous_index)
+                return self._bump_last_level(previous_index)
             elif current_level < previous_level:
-                return self._remove_current_and_bump_previous_level(previous_index)
+                shortened_index = self._remove_obsolete_levels(previous_index, current_level)
+                return self._bump_last_level(shortened_index)
         else:
             return ()
 
@@ -50,12 +51,12 @@ class MarkdownLine:
         return (*index, 1)
 
     @staticmethod
-    def _bump_current_level(index):
+    def _bump_last_level(index):
         return index[:-1] + (index[-1] + 1,)
 
     @staticmethod
-    def _remove_current_and_bump_previous_level(index):
-        return index[:-2] + (index[-2] + 1,)
+    def _remove_obsolete_levels(index, current_level):
+        return index[:current_level]
 
     @staticmethod
     def _to_anchor_name(index):
@@ -65,6 +66,7 @@ class MarkdownLine:
         self._next_index = next_index
 
     def to_markdown(self, with_anchor=False, with_navigation=False, with_debug=False):
+        debug_info = f'{self.index}' if self.index and with_debug else ''
         if with_anchor and self.index:
             pre_line = f'<a name="{self.anchor_name}"></a>'
             line = '#' * len(self.index)
@@ -73,11 +75,11 @@ class MarkdownLine:
                 line += self.link_to_top
                 line += self.link_to_previous
                 line += self.link_to_next
-            line += f'{self.index} - ' if with_debug else ''
+            line += debug_info
             line += ' ' + self.line.partition(" ")[2]
             return [pre_line, line]
         else:
-            return [self.line]
+            return [f'{debug_info}{self.line}']
 
     def to_toc_entry(self):
         return f'{"  " * (len(self.index) - 1)}* [{self.line.partition(" ")[2]}](#{self._to_anchor_name(self._current_index)})' if self.index else self.line
@@ -135,10 +137,9 @@ class MarkdownDocument:
     @staticmethod
     def _remove_old_toc(lines):
         try:
-            start = lines.index('[toc_start]::')
-            end = lines.index('[toc_end]::')
-            if lines[start - 1] == '' and lines[end - 1] == '':
-                lines = [line for index, line in enumerate(lines) if index < start - 1 or index > end]
+            start = lines.index(MarkdownDocument.TOC_START[0])
+            end = lines.index(MarkdownDocument.TOC_END[-1])
+            lines = [line for index, line in enumerate(lines) if index < start or index > end]
         except ValueError:
             pass
         return lines
@@ -176,13 +177,14 @@ class MarkdownDocument:
     def dump(self, add_toc=False, add_navigation=False, max_level=0, with_debug=False):
         lines = []
         if add_toc:
-            lines.append(self.TOC_START)
+            lines.extend(self.TOC_START)
             for line in self.md_lines:
                 if self._should_print_toc_line(line, max_level):
                     lines.append(line.to_toc_entry())
-            lines.append(self.TOC_END)
+            lines.extend(self.TOC_END)
         for md_line in self.md_lines:
-            lines.append(md_line.to_markdown(with_anchor=add_toc, with_navigation=add_navigation, with_debug=with_debug))
+            lines.extend(md_line.to_markdown(with_anchor=add_toc, with_navigation=add_navigation, with_debug=with_debug))
+        return lines
 
 
 class MarkdownHelper:
@@ -195,14 +197,21 @@ class MarkdownHelper:
         with open(path) as file:
             return [line.rstrip('\n') for line in file]
 
+    @staticmethod
+    def _print_content(content):
+        print('\n'.join(content))
+
     def dump(self, add_toc=False, remove_old_toc=False, with_debug=False):
         md_document = MarkdownDocument(lines=self.raw_content, remove_old_toc=remove_old_toc)
-        md_document.dump(add_toc=add_toc, with_debug=with_debug)
+        content = md_document.dump(add_toc=add_toc, with_debug=with_debug)
+        self._print_content(content)
 
     def cleanse(self):
         md_document = MarkdownDocument(lines=self.raw_content, remove_old_toc=True)
-        md_document.dump()
+        content = md_document.dump()
+        self._print_content(content)
 
     def add_toc(self, add_navigation=False, max_level=0):
         md_document = MarkdownDocument(lines=self.raw_content)
-        md_document.dump(add_toc=True, add_navigation=add_navigation, max_level=max_level)
+        content = md_document.dump(add_toc=True, add_navigation=add_navigation, max_level=max_level)
+        self._print_content(content)

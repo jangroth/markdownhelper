@@ -1,12 +1,15 @@
 import os
 
 import pytest
+
 from markdown_helper import MarkdownHelper
 
 
 @pytest.fixture
 def mdh():
-    return MarkdownHelper('tests/resources/simple.md')
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    test_file = os.path.join(current_dir, 'resources', 'simple.md')
+    return MarkdownHelper(test_file)
 
 
 def test_should_add_and_remove_toc(mdh, capsys, tmp_path):
