@@ -73,7 +73,7 @@ def test_should_render_to_markdown():
     assert MarkdownLine('# 1').to_markdown() == ['# 1']
     assert MarkdownLine('# 1').to_markdown(with_anchor=True) == ['<a name="1"></a>', '# 1']
     assert MarkdownLine('# 1').to_markdown(with_anchor=True, with_navigation=True) == ['<a name="1"></a>', '# [↖](#top)[↑](#)[↓](#) 1']
-    assert MarkdownLine('# 1').to_markdown(with_anchor=True, with_navigation=True, with_debug=True) == ['<a name="1"></a>', '# [↖](#top)[↑](#)[↓](#)(1,) 1']
+    assert MarkdownLine('# 1').to_markdown(with_anchor=True, with_navigation=True, with_debug=True) == ['<a name="1"></a>', '# [↖](#top)[↑](#)[↓](#) (1,) 1']
 
 
 def test_should_render_to_toc_entry():
@@ -118,6 +118,12 @@ def test_add_next_indices_to_md(mdd):
 def test_dump_returns_flat_list_of_lines(mdd):
     mdd.md_lines = mdd._cleansed_to_md(['one', '# two'])
 
-    assert mdd.dump(with_debug=True) == ['one', '(1,)# two']
+    assert mdd.dump(with_debug=True) == ['one', '# (1,) two']
     assert mdd.dump() == ['one', '# two']
     assert mdd.dump(add_toc=True) == ['[toc_start]::', '<a name="top"></a>', '---', '* [two](#1)', '---', '[toc_end]::', 'one', '<a name="1"></a>', '# two']
+
+
+def test_dont_add_anchors_if_past_max_level(mdd):
+    mdd.md_lines = mdd._cleansed_to_md(['one', '# two', '## three'])
+    assert mdd.dump(add_navigation=True, max_level=0) == ['one', '# [↖](#top)[↑](#)[↓](#) two', '## [↖](#top)[↑](#1)[↓](#) three']
+    assert mdd.dump(add_navigation=True, max_level=1) == ['one', '# [↖](#top)[↑](#)[↓](#) two', '## three']

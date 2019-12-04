@@ -65,21 +65,21 @@ class MarkdownLine:
     def set_next_index(self, next_index):
         self._next_index = next_index
 
-    def to_markdown(self, with_anchor=False, with_navigation=False, with_debug=False):
-        debug_info = f'{self.index}' if self.index and with_debug else ''
-        if with_anchor and self.index:
-            pre_line = f'<a name="{self.anchor_name}"></a>'
-            line = '#' * len(self.index)
-            if with_navigation:
-                line += ' '
-                line += self.link_to_top
-                line += self.link_to_previous
-                line += self.link_to_next
-            line += debug_info
-            line += ' ' + self.line.partition(" ")[2]
-            return [pre_line, line]
+    def to_markdown(self, with_anchor=False, with_navigation=False, max_level=0, with_debug=False):
+        if self.index:
+            current_level = len(self.index)
+            index_part = '#' * current_level
+            navigation_part = f'{self.link_to_top}{self.link_to_previous}{self.link_to_next} ' if with_navigation and (max_level == 0 or current_level <= max_level) else ''
+            debug_part = f'{self.index} ' if self.index and with_debug else ''
+            text_part = self.line.partition(" ")[2]
+            complete_line = f'{index_part} {navigation_part}{debug_part}{text_part}'
+            if with_anchor:
+                pre_line = f'<a name="{self.anchor_name}"></a>'
+                return [pre_line, complete_line]
+            else:
+                return [complete_line]
         else:
-            return [f'{debug_info}{self.line}']
+            return [self.line]
 
     def to_toc_entry(self):
         return f'{"  " * (len(self.index) - 1)}* [{self.line.partition(" ")[2]}](#{self._to_anchor_name(self._current_index)})' if self.index else self.line
@@ -183,7 +183,7 @@ class MarkdownDocument:
                     lines.append(line.to_toc_entry())
             lines.extend(self.TOC_END)
         for md_line in self.md_lines:
-            lines.extend(md_line.to_markdown(with_anchor=add_toc, with_navigation=add_navigation, with_debug=with_debug))
+            lines.extend(md_line.to_markdown(with_anchor=add_toc, with_navigation=add_navigation, max_level=max_level, with_debug=with_debug))
         return lines
 
 
