@@ -212,6 +212,6 @@ class MarkdownHelper:
         self._print_content(content)
 
     def add_toc(self, add_navigation=False, max_level=0):
-        md_document = MarkdownDocument(lines=self.raw_content)
+        md_document = MarkdownDocument(lines=self.raw_content, remove_old_toc=True)
         content = md_document.dump(add_toc=True, add_navigation=add_navigation, max_level=max_level)
         self._print_content(content)

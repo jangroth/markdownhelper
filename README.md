@@ -19,19 +19,7 @@ Commands:
 
 ## Usage
 
-Dump existing document:
-
-```bash
-./bin/mdh dump tests/resources/simple.md 
-```
-
-If necessary, remove old TOC:
-
-```bash
-./bin/mdh cleanse tests/resources/simple.md 
-```
-
-Add new TOC:
+Add new TOC. This will also remove the old TOC, if it was rendered with `mdh`.
 
 ```bash
 ./bin/mdh toc tests/resources/simple.md 
@@ -41,6 +29,24 @@ Optionally, add navigation arrows to headers:
 
 ```bash
 ./bin/mdh toc --navigation tests/resources/simple.md 
+```
+
+Optionally, only render up to _max level_:
+
+```bash
+./bin/mdh toc --max-level 2 tests/resources/simple.md 
+```
+
+If necessary, remove old TOC:
+
+```bash
+./bin/mdh cleanse tests/resources/simple.md 
+```
+
+Dump existing document:
+
+```bash
+./bin/mdh dump tests/resources/simple.md 
 ```
 
 ## Screenshots
