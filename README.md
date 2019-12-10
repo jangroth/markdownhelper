@@ -31,10 +31,10 @@ Optionally, add navigation arrows to headers:
 ./bin/mdh toc --navigation tests/resources/simple.md 
 ```
 
-Optionally, only render up to _max level_:
+Optionally, only render up to _top level_:
 
 ```bash
-./bin/mdh toc --max-level 2 tests/resources/simple.md 
+./bin/mdh toc --top-level 2 tests/resources/simple.md 
 ```
 
 If necessary, remove old TOC:

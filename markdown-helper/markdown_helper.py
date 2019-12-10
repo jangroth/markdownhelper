@@ -65,15 +65,15 @@ class MarkdownLine:
     def set_next_index(self, next_index):
         self._next_index = next_index
 
-    def to_markdown(self, with_anchor=False, with_navigation=False, max_level=0, with_debug=False):
+    def to_markdown(self, with_anchor=False, with_navigation=False, top_level=0, with_debug=False):
         if self.index:
             current_level = len(self.index)
             index_part = '#' * current_level
-            navigation_part = f'{self.link_to_top}{self.link_to_previous}{self.link_to_next} ' if with_navigation and (max_level == 0 or current_level <= max_level) else ''
+            navigation_part = f'{self.link_to_top}{self.link_to_previous}{self.link_to_next} ' if with_navigation and (top_level == 0 or current_level <= top_level) else ''
             debug_part = f'{self.index} ' if self.index and with_debug else ''
             text_part = self.line.partition(" ")[2]
             complete_line = f'{index_part} {navigation_part}{debug_part}{text_part}'
-            if with_anchor and (max_level == 0 or current_level <= max_level):
+            if with_anchor and (top_level == 0 or current_level <= top_level):
                 pre_line = f'<a name="{self.anchor_name}"></a>'
                 return [pre_line, complete_line]
             else:
@@ -167,23 +167,23 @@ class MarkdownDocument:
         return result[::-1]
 
     @staticmethod
-    def _should_print_toc_line(line, max_level):
+    def _should_print_toc_line(line, top_level):
         result = False
         if line.index:
-            if max_level == 0 or len(line.index) <= max_level:
+            if top_level == 0 or len(line.index) <= top_level:
                 result = True
         return result
 
-    def dump(self, add_toc=False, add_navigation=False, max_level=0, with_debug=False):
+    def dump(self, add_toc=False, add_navigation=False, top_level=0, with_debug=False):
         lines = []
         if add_toc:
             lines.extend(self.TOC_START)
             for line in self.md_lines:
-                if self._should_print_toc_line(line, max_level):
+                if self._should_print_toc_line(line, top_level):
                     lines.append(line.to_toc_entry())
             lines.extend(self.TOC_END)
         for md_line in self.md_lines:
-            lines.extend(md_line.to_markdown(with_anchor=add_toc, with_navigation=add_navigation, max_level=max_level, with_debug=with_debug))
+            lines.extend(md_line.to_markdown(with_anchor=add_toc, with_navigation=add_navigation, top_level=top_level, with_debug=with_debug))
         return lines
 
 
@@ -211,7 +211,7 @@ class MarkdownHelper:
         content = md_document.dump()
         self._print_content(content)
 
-    def add_toc(self, add_navigation=False, max_level=0):
+    def add_toc(self, add_navigation=False, top_level=0):
         md_document = MarkdownDocument(lines=self.raw_content, remove_old_toc=True)
-        content = md_document.dump(add_toc=True, add_navigation=add_navigation, max_level=max_level)
+        content = md_document.dump(add_toc=True, add_navigation=add_navigation, top_level=top_level)
         self._print_content(content)

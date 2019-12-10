@@ -123,13 +123,13 @@ def test_dump_returns_flat_list_of_lines(mdd):
     assert mdd.dump(add_toc=True) == ['[toc_start]::', '<a name="top"></a>', '---', '* [two](#1)', '---', '[toc_end]::', 'one', '<a name="1"></a>', '# two']
 
 
-def test_dont_add_navigation_if_over_max_level(mdd):
+def test_dont_add_navigation_if_over_top_level(mdd):
     mdd.md_lines = mdd._cleansed_to_md(['one', '# two', '## three'])
-    assert mdd.dump(add_navigation=True, max_level=0) == ['one', '# [↖](#top)[↑](#)[↓](#) two', '## [↖](#top)[↑](#1)[↓](#) three']
-    assert mdd.dump(add_navigation=True, max_level=1) == ['one', '# [↖](#top)[↑](#)[↓](#) two', '## three']
+    assert mdd.dump(add_navigation=True, top_level=0) == ['one', '# [↖](#top)[↑](#)[↓](#) two', '## [↖](#top)[↑](#1)[↓](#) three']
+    assert mdd.dump(add_navigation=True, top_level=1) == ['one', '# [↖](#top)[↑](#)[↓](#) two', '## three']
 
 
-def test_dont_add_anchor_if_over_max_level(mdd):
+def test_dont_add_anchor_if_over_top_level(mdd):
     mdd.md_lines = mdd._cleansed_to_md(['one', '# two', '## three'])
-    assert mdd.dump(add_toc=True, max_level=0)[-5:] == ['one', '<a name="1"></a>', '# two', '<a name="1_1"></a>', '## three']
-    assert mdd.dump(add_toc=True, max_level=1)[-4:] == ['one', '<a name="1"></a>', '# two', '## three']
+    assert mdd.dump(add_toc=True, top_level=0)[-5:] == ['one', '<a name="1"></a>', '# two', '<a name="1_1"></a>', '## three']
+    assert mdd.dump(add_toc=True, top_level=1)[-4:] == ['one', '<a name="1"></a>', '# two', '## three']

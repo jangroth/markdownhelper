@@ -23,10 +23,10 @@ def cleanse(path):
 
 @click.command(help='Adds TOC to top of file. If exists, removes old TOC first.')
 @click.argument('path')
-@click.option('--max-level', default=0, help='Only go max-levels deep. Leave empty or zero for all levels.')
+@click.option('--top-level', default=0, help='Only go top-levels deep. Leave empty or zero for all levels.')
 @click.option('--navigation/--no-navigation', default=False, help='Adds navigation links to headers')
-def toc(path, max_level, navigation):
-    MarkdownHelper(path=path).add_toc(add_navigation=navigation, max_level=max_level)
+def toc(path, top_level, navigation):
+    MarkdownHelper(path=path).add_toc(add_navigation=navigation, top_level=top_level)
 
 
 if __name__ == '__main__':
