@@ -73,7 +73,7 @@ class MarkdownLine:
             debug_part = f'{self.index} ' if self.index and with_debug else ''
             text_part = self.line.partition(" ")[2]
             complete_line = f'{index_part} {navigation_part}{debug_part}{text_part}'
-            if with_anchor:
+            if with_anchor and (max_level == 0 or current_level <= max_level):
                 pre_line = f'<a name="{self.anchor_name}"></a>'
                 return [pre_line, complete_line]
             else:
