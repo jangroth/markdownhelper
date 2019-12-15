@@ -45,9 +45,9 @@ def test_should_convert_both_to_markdown(mdp):
 
 def test_should_convert_mh_to_toc_entry(mdp):
     line = mdp.parse(['# foo'])[0]
-    assert line.to_toc_entry() == '* [foo](#1)'
+    assert line.to_toc_entry(0) == '* [foo](#1)'
     line = mdp.parse(['# foo', '## bar baz'])[1]
-    assert line.to_toc_entry() == '  * [bar baz](#1_1)'
+    assert line.to_toc_entry(0) == '  * [bar baz](#1_1)'
 
 
 def test_dont_render_navlink_if_target_doesnt_exist(mdp):
@@ -146,10 +146,10 @@ def test_is_in_toc_should_fail_if_called_with_markdownline(mdd):
         mdd._is_in_toc(line, (), 0, 0)
 
 
-def test_should_only_insert_toc_if_it_has_elements(mdp, mdd):
+def test_should_only_return_toc_if_it_has_elements(mdp, mdd):
     lines = mdp.parse(['foo'])
     mdd.md_lines = lines
-    assert mdd._insert_toc((), 0, 1) == []
+    assert mdd._create_toc((), 0, 1) == []
 
 
 def test_should_dump_no_extras(mdp, mdd):
@@ -167,24 +167,24 @@ def test_should_dump_with_debug(mdp, mdd):
 def test_should_dump_with_main_toc(mdp, mdd):
     lines = mdp.parse(['foo', '# bar', '## bum', '### baz', '# klo'])
     mdd.md_lines = lines
-    assert mdd.dump(with_toc=True) == ['[toc_start]::', '<a name="top"></a>', '---', '* [bar](#1)', '  * [bum](#1_1)', '    * [baz](#1_1_1)', '* [klo](#2)', '---', '[toc_end]::', 'foo', '<a name="1"></a>', '# [↖](#top)[↓](#1_1) bar', '<a name="1_1"></a>', '## [↖](#top)[↑](#1)[↓](#1_1_1) bum', '<a name="1_1_1"></a>', '### [↖](#top)[↑](#1_1)[↓](#2) baz', '<a name="2"></a>', '# [↖](#top)[↑](#1_1_1) klo']
-    assert mdd.dump(with_toc=True, max_main_toc_level=1) == ['[toc_start]::', '<a name="top"></a>', '---', '* [bar](#1)', '* [klo](#2)', '---', '[toc_end]::', 'foo', '<a name="1"></a>', '# [↖](#top)[↓](#1_1) bar', '## bum', '### baz', '<a name="2"></a>', '# [↖](#top)[↑](#1_1_1) klo']
+    assert mdd.dump(with_toc=True) == ['[toc_start]::', '---', '<a name="top"></a>', '* [bar](#1)', '  * [bum](#1_1)', '    * [baz](#1_1_1)', '* [klo](#2)', '---', '[toc_end]::', 'foo', '<a name="1"></a>', '# [↖](#top)[↓](#1_1) bar', '<a name="1_1"></a>', '## [↖](#top)[↑](#1)[↓](#1_1_1) bum', '<a name="1_1_1"></a>', '### [↖](#top)[↑](#1_1)[↓](#2) baz', '<a name="2"></a>', '# [↖](#top)[↑](#1_1_1) klo']
+    assert mdd.dump(with_toc=True, max_main_toc_level=1) == ['[toc_start]::', '---', '<a name="top"></a>', '* [bar](#1)', '* [klo](#2)', '---', '[toc_end]::', 'foo', '<a name="1"></a>', '# [↖](#top)[↓](#1_1) bar', '## bum', '### baz', '<a name="2"></a>', '# [↖](#top)[↑](#1_1_1) klo']
 
 
 def test_should_dump_with_main_and_sub_toc(mdp, mdd):
     lines = mdp.parse(['foo', '# bar', '## bum', '### baz', '# klo'])
     mdd.md_lines = lines
-    assert mdd.dump(with_toc=True, max_main_toc_level=1, extra_sub_toc_level=1) == ['[toc_start]::', '<a name="top"></a>', '---', '* [bar](#1)', '* [klo](#2)', '---', '[toc_end]::', 'foo', '<a name="1"></a>', '# [↖](#top)[↓](#1_1) bar', '[toc_start]::', '<a name="top"></a>', '---', '  * [bum](#1_1)', '---', '[toc_end]::', '<a name="1_1"></a>', '## [↖](#top)[↑](#1)[↓](#1_1_1) bum', '### baz', '<a name="2"></a>', '# [↖](#top)[↑](#1_1_1) klo']
-    assert mdd.dump(with_toc=True, max_main_toc_level=1, extra_sub_toc_level=2) == ['[toc_start]::', '<a name="top"></a>', '---', '* [bar](#1)', '* [klo](#2)', '---', '[toc_end]::', 'foo', '<a name="1"></a>', '# [↖](#top)[↓](#1_1) bar', '[toc_start]::', '<a name="top"></a>', '---', '  * [bum](#1_1)', '    * [baz](#1_1_1)', '---', '[toc_end]::', '<a name="1_1"></a>', '## [↖](#top)[↑](#1)[↓](#1_1_1) bum', '<a name="1_1_1"></a>', '### [↖](#top)[↑](#1_1)[↓](#2) baz', '<a name="2"></a>', '# [↖](#top)[↑](#1_1_1) klo']
+    assert mdd.dump(with_toc=True, max_main_toc_level=1, extra_sub_toc_level=1) == ['[toc_start]::', '---', '<a name="top"></a>', '* [bar](#1)', '* [klo](#2)', '---', '[toc_end]::', 'foo', '<a name="1"></a>', '# [↖](#top)[↓](#1_1) bar', '[toc_start]::', '---', '* [bum](#1_1)', '---', '[toc_end]::', '<a name="1_1"></a>', '## [↖](#top)[↑](#1)[↓](#1_1_1) bum', '### baz', '<a name="2"></a>', '# [↖](#top)[↑](#1_1_1) klo']
+    assert mdd.dump(with_toc=True, max_main_toc_level=1, extra_sub_toc_level=2) == ['[toc_start]::', '---', '<a name="top"></a>', '* [bar](#1)', '* [klo](#2)', '---', '[toc_end]::', 'foo', '<a name="1"></a>', '# [↖](#top)[↓](#1_1) bar', '[toc_start]::', '---', '* [bum](#1_1)', '  * [baz](#1_1_1)', '---', '[toc_end]::', '<a name="1_1"></a>', '## [↖](#top)[↑](#1)[↓](#1_1_1) bum', '<a name="1_1_1"></a>', '### [↖](#top)[↑](#1_1)[↓](#2) baz', '<a name="2"></a>', '# [↖](#top)[↑](#1_1_1) klo']
 
 
 def test_should_not_render_anchors_if_line_is_not_linked_to(mdp, mdd):
     lines = mdp.parse(['foo', '# bar', '## bum', '### baz', '# klo'])
     mdd.md_lines = lines
-    assert mdd.dump(with_toc=True, max_main_toc_level=1) == ['[toc_start]::', '<a name="top"></a>', '---', '* [bar](#1)', '* [klo](#2)', '---', '[toc_end]::', 'foo', '<a name="1"></a>', '# [↖](#top)[↓](#1_1) bar', '## bum', '### baz', '<a name="2"></a>', '# [↖](#top)[↑](#1_1_1) klo']
+    assert mdd.dump(with_toc=True, max_main_toc_level=1) == ['[toc_start]::', '---','<a name="top"></a>',  '* [bar](#1)', '* [klo](#2)', '---', '[toc_end]::', 'foo', '<a name="1"></a>', '# [↖](#top)[↓](#1_1) bar', '## bum', '### baz', '<a name="2"></a>', '# [↖](#top)[↑](#1_1_1) klo']
 
 
 def test_should_render_navigation_links(mdp, mdd):
     lines = mdp.parse(['foo', '# bar', '## bum', '### baz', '# klo'])
     mdd.md_lines = lines
-    assert mdd.dump(with_toc=True, max_main_toc_level=1) == ['[toc_start]::', '<a name="top"></a>', '---', '* [bar](#1)', '* [klo](#2)', '---', '[toc_end]::', 'foo', '<a name="1"></a>', '# [↖](#top)[↓](#1_1) bar', '## bum', '### baz', '<a name="2"></a>', '# [↖](#top)[↑](#1_1_1) klo']
+    assert mdd.dump(with_toc=True, max_main_toc_level=1) == ['[toc_start]::', '---','<a name="top"></a>',  '* [bar](#1)', '* [klo](#2)', '---', '[toc_end]::', 'foo', '<a name="1"></a>', '# [↖](#top)[↓](#1_1) bar', '## bum', '### baz', '<a name="2"></a>', '# [↖](#top)[↑](#1_1_1) klo']

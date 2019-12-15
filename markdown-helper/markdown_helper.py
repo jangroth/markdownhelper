@@ -1,42 +1,40 @@
 import re
 from collections import namedtuple
-from typing import List, Tuple
 
 HeadingIndices = namedtuple('HeadingIndices', ['previous', 'current', 'next'])
 
 
 class MarkdownLine:
 
-    def __init__(self, text: str):
+    def __init__(self, text):
         self.raw_text = text
 
     def __str__(self):
         return self.raw_text
 
-    def to_markdown(self, with_anchor=False, top_level=0, sub_level=0, with_debug=False) -> List[str]:
+    def to_markdown(self, with_anchor=False, top_level=0, sub_level=0, with_debug=False):
         return [self.raw_text]
 
-    def to_toc_entry(self) -> str:
+    def to_toc_entry(self, base_heading):
         raise NotImplementedError()
 
 
 class MarkdownHeading(MarkdownLine):
-    def __init__(self, text: str):
+    def __init__(self, text):
         super().__init__(text)
         self.heading, _, self.text_after_heading = text.partition(" ")
         self.heading_level = len(self.heading)
         self.heading_indices = None
 
     @staticmethod
-    def _anchor_name(tpl: Tuple[int]) -> str:
+    def _anchor_name(tpl):
         return '_'.join([str(i) for i in tpl])
 
-    def _complete_anchor(self) -> str:
+    def _complete_anchor(self):
         return f'<a name="{MarkdownHeading._anchor_name(self.heading_indices.current)}"></a>'
 
-    def to_toc_entry(self) -> str:
-        # TODO: consider base heading
-        return f'{"  " * (self.heading_level - 1)}' \
+    def to_toc_entry(self, base_heading):
+        return f'{"  " * (self.heading_level - base_heading - 1)}' \
                f'* ' \
                f'[{self.text_after_heading}](#{MarkdownHeading._anchor_name(self.heading_indices.current)})'
 
@@ -49,7 +47,7 @@ class MarkdownHeading(MarkdownLine):
     def link_to_next(self):
         return f'[↓](#{MarkdownHeading._anchor_name(self.heading_indices.next)})' if self.heading_indices.next else ''
 
-    def to_markdown(self, with_anchor=False, top_level=0, sub_level=0, with_debug=False) -> List[str]:
+    def to_markdown(self, with_anchor=False, top_level=0, sub_level=0, with_debug=False):
         result = []
         if with_anchor:
             result.append(self._complete_anchor())
@@ -62,22 +60,22 @@ class MarkdownHeading(MarkdownLine):
 class MarkdownParser:
     REG_HEADING_CHAR = re.compile('^#+ .+')
 
-    def _is_heading(self, line: str) -> bool:
+    def _is_heading(self, line):
         return re.match(self.REG_HEADING_CHAR, line) is not None
 
     @staticmethod
-    def _add_new_level(index: Tuple[int]) -> Tuple[int]:
+    def _add_new_level(index):
         return (*index, 1)
 
     @staticmethod
-    def _bump_last_level(index: Tuple[int]) -> Tuple[int]:
+    def _bump_last_level(index):
         return index[:-1] + (index[-1] + 1,)
 
     @staticmethod
-    def _remove_obsolete_levels(index: Tuple[int], current_level: int) -> Tuple[int]:
+    def _remove_obsolete_levels(index, current_level):
         return index[:current_level]
 
-    def _generate_index(self, previous_index: Tuple[int], current_header_level: int) -> Tuple[int]:
+    def _generate_index(self, previous_index, current_header_level):
         assert current_header_level > 0
         previous_level = len(previous_index)
         if current_header_level > previous_level:
@@ -88,21 +86,21 @@ class MarkdownParser:
             shortened_index = self._remove_obsolete_levels(previous_index, current_header_level)
             return self._bump_last_level(shortened_index)
 
-    def _set_next_index(self, lines: List[str]):
+    def _set_next_index(self, lines):
         current_index = ()
         for heading in (heading for heading in reversed(lines) if isinstance(heading, MarkdownHeading)):
             next_index = heading.heading_indices.current
             heading.heading_indices = HeadingIndices(heading.heading_indices.previous, heading.heading_indices.current, current_index)
             current_index = next_index
 
-    def _set_prev_and_current_index(self, lines: List[str]):
+    def _set_prev_and_current_index(self, lines):
         current_index = ()
         for heading in (heading for heading in lines if isinstance(heading, MarkdownHeading)):
             new_index = self._generate_index(current_index, heading.heading_level)
             heading.heading_indices = HeadingIndices(current_index, new_index, None)
             current_index = new_index
 
-    def parse(self, lines: List[str]) -> List[MarkdownLine]:
+    def parse(self, lines):
         lines = [MarkdownHeading(line) if self._is_heading(line) else MarkdownLine(line) for line in lines]
         self._set_prev_and_current_index(lines)
         self._set_next_index(lines)
@@ -113,7 +111,8 @@ class MarkdownDocument:
     REG_SPACER_BETWEEN_HEADER_AND_LINK = re.compile('(?<=#) (?=\\[)')
     REG_INTERNAL_ANCHOR = re.compile('<a.*name.*a>')
     REG_INTERNAL_LINK = re.compile('\\[.*\\]\\(#.*\\)')
-    TOC_START = ['[toc_start]::', '<a name="top"></a>', '---']
+    TOC_START = ['[toc_start]::', '---']
+    TOC_TOP_LINK = ['<a name="top"></a>']
     TOC_END = ['---', '[toc_end]::']
 
     def __init__(self, raw_lines, remove_old_toc=False):
@@ -122,7 +121,7 @@ class MarkdownDocument:
         self.md_lines = MarkdownParser().parse(raw_lines)
 
     @staticmethod
-    def _cleansing_generator(lines: List[str]) -> str:
+    def _cleansing_generator(lines):
         lines = MarkdownDocument._remove_existing_tocs(lines)
         for line in lines:
             if line != '':
@@ -135,7 +134,7 @@ class MarkdownDocument:
                 yield line
 
     @staticmethod
-    def _remove_existing_tocs(lines: List[str]) -> List[str]:
+    def _remove_existing_tocs(lines):
         try:
             while True:
                 start = lines.index(MarkdownDocument.TOC_START[0])
@@ -147,19 +146,20 @@ class MarkdownDocument:
         assert all(x not in [MarkdownDocument.TOC_START[0], MarkdownDocument.TOC_END[-1]] for x in lines)
         return lines
 
-    def _insert_toc(self, toc_parent_index, start_level, end_level):
+    def _create_toc(self, toc_parent_index, start_level, end_level):
         result = []
-        toc_lines = [line.to_toc_entry() for line in self.md_lines if isinstance(line, MarkdownHeading) and self._is_in_toc(line, toc_parent_index, start_level, end_level)]
+        parent_index_level = len(toc_parent_index)
+        toc_lines = [line.to_toc_entry(parent_index_level) for line in self.md_lines if isinstance(line, MarkdownHeading) and self._is_in_toc(line, toc_parent_index, start_level, end_level)]
         if toc_lines:
-            # TODO: extract rendering of top link
             result.extend(self.TOC_START)
+            if parent_index_level == 0:
+                result.extend(self.TOC_TOP_LINK)
             result.extend(toc_lines)
             result.extend(self.TOC_END)
         return result
 
     def _is_in_toc(self, line, toc_parent_index, start_level, end_level):
         assert isinstance(line, MarkdownHeading)
-
         parent_len = len(toc_parent_index)
         current = line.heading_indices.current
         if current[:parent_len] == toc_parent_index:
@@ -192,12 +192,12 @@ class MarkdownDocument:
     def dump(self, with_toc=False, with_navigation_arrows=False, with_debug=False, max_main_toc_level=0, extra_sub_toc_level=0):
         lines = []
         if self._should_insert_toc_here(with_toc):
-            lines.extend(self._insert_toc((), 0, max_main_toc_level))
+            lines.extend(self._create_toc((), 0, max_main_toc_level))
         for md_line in self.md_lines:
             with_anchor = self._needs_anchor(md_line, with_toc, max_main_toc_level, extra_sub_toc_level)
             lines.extend(md_line.to_markdown(with_anchor=with_anchor, top_level=max_main_toc_level, sub_level=extra_sub_toc_level, with_debug=with_debug))
             if self._should_insert_toc_here(with_toc, md_line, max_main_toc_level, max_main_toc_level + extra_sub_toc_level):
-                lines.extend(self._insert_toc(md_line.heading_indices.current, md_line.heading_level + 1, md_line.heading_level + extra_sub_toc_level))
+                lines.extend(self._create_toc(md_line.heading_indices.current, md_line.heading_level + 1, md_line.heading_level + extra_sub_toc_level))
         return lines
 
 
