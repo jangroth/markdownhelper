@@ -111,9 +111,11 @@ class MarkdownDocument:
     REG_SPACER_BETWEEN_HEADER_AND_LINK = re.compile('(?<=#) (?=\\[)')
     REG_INTERNAL_ANCHOR = re.compile('<a.*name.*a>')
     REG_INTERNAL_LINK = re.compile('\\[.*\\]\\(#.*\\)')
-    TOC_START = ['[toc_start]::', '---']
-    TOC_TOP_LINK = ['<a name="top"></a>']
-    TOC_END = ['---', '[toc_end]::']
+    TOC_START = '[toc_start]::'
+    TOC_TOP_LINK = '<a name="top"></a>'
+    TOC_RULER = '---'
+    TOC_EMPTY_LINE = ''
+    TOC_END = '[toc_end]::'
 
     def __init__(self, raw_lines, remove_old_toc=False):
         if remove_old_toc:
@@ -137,13 +139,15 @@ class MarkdownDocument:
     def _remove_existing_tocs(lines):
         try:
             while True:
-                start = lines.index(MarkdownDocument.TOC_START[0])
-                end = lines.index(MarkdownDocument.TOC_END[-1])
+                start = lines.index(MarkdownDocument.TOC_START)
+                end = lines.index(MarkdownDocument.TOC_END)
                 assert start < end
-                lines = [line for index, line in enumerate(lines) if index < start or index > end]
+                if lines[start - 1] == MarkdownDocument.TOC_EMPTY_LINE:
+                    start -= 1
+                lines = [line for index, line in enumerate(lines) if not (start <= index <= end)]
         except ValueError:
             pass
-        assert all(x not in [MarkdownDocument.TOC_START[0], MarkdownDocument.TOC_END[-1]] for x in lines)
+        assert all(x not in [MarkdownDocument.TOC_START, MarkdownDocument.TOC_END] for x in lines)
         return lines
 
     def _create_toc(self, toc_parent_index, start_level, end_level):
@@ -151,11 +155,17 @@ class MarkdownDocument:
         parent_index_level = len(toc_parent_index)
         toc_lines = [line.to_toc_entry(parent_index_level) for line in self.md_lines if isinstance(line, MarkdownHeading) and self._is_in_toc(line, toc_parent_index, start_level, end_level)]
         if toc_lines:
-            result.extend(self.TOC_START)
+            # TODO: Cleanup and insert empty line before comment
+            result.append(self.TOC_EMPTY_LINE)
+            result.append(self.TOC_START)
             if parent_index_level == 0:
-                result.extend(self.TOC_TOP_LINK)
+                result.append(self.TOC_TOP_LINK)
+                result.append(self.TOC_RULER)
             result.extend(toc_lines)
-            result.extend(self.TOC_END)
+            if parent_index_level == 0:
+                result.append(self.TOC_RULER)
+            result.append(self.TOC_EMPTY_LINE)
+            result.append(self.TOC_END)
         return result
 
     def _is_in_toc(self, line, toc_parent_index, start_level, end_level):
