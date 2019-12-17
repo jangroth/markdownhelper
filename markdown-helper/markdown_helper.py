@@ -39,6 +39,7 @@ class MarkdownHeading(MarkdownLine):
                f'[{self.text_after_heading}](#{MarkdownHeading._anchor_name(self.heading_indices.current)})'
 
     def link_to_top(self):
+        # TODO: Link to sub heading for sub-TOCs
         return '[↖](#top)'
 
     def link_to_previous(self):
@@ -111,6 +112,7 @@ class MarkdownDocument:
     REG_SPACER_BETWEEN_HEADER_AND_LINK = re.compile('(?<=#) (?=\\[)')
     REG_INTERNAL_ANCHOR = re.compile('<a.*name.*a>')
     REG_INTERNAL_LINK = re.compile('\\[.*\\]\\(#.*\\)')
+    # TODO: Replace with HTML comment
     TOC_START = '[toc_start]::'
     TOC_TOP_LINK = '<a name="top"></a>'
     TOC_RULER = '---'
@@ -155,8 +157,6 @@ class MarkdownDocument:
         parent_index_level = len(toc_parent_index)
         toc_lines = [line.to_toc_entry(parent_index_level) for line in self.md_lines if isinstance(line, MarkdownHeading) and self._is_in_toc(line, toc_parent_index, start_level, end_level)]
         if toc_lines:
-            # TODO: Cleanup and insert empty line before comment
-            result.append(self.TOC_EMPTY_LINE)
             result.append(self.TOC_START)
             if parent_index_level == 0:
                 result.append(self.TOC_TOP_LINK)
@@ -164,7 +164,6 @@ class MarkdownDocument:
             result.extend(toc_lines)
             if parent_index_level == 0:
                 result.append(self.TOC_RULER)
-            result.append(self.TOC_EMPTY_LINE)
             result.append(self.TOC_END)
         return result
 
