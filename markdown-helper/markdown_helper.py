@@ -112,12 +112,11 @@ class MarkdownDocument:
     REG_SPACER_BETWEEN_HEADER_AND_LINK = re.compile('(?<=#) (?=\\[)')
     REG_INTERNAL_ANCHOR = re.compile('<a.*name.*a>')
     REG_INTERNAL_LINK = re.compile('\\[.*\\]\\(#.*\\)')
-    # TODO: Replace with HTML comment
-    TOC_START = '[toc_start]::'
-    TOC_TOP_LINK = '<a name="top"></a>'
+    TOC_START = '<!-- toc_start -->'
+    TOC_TOP_ANCHOR = '<a name="top"></a>'
     TOC_RULER = '---'
     TOC_EMPTY_LINE = ''
-    TOC_END = '[toc_end]::'
+    TOC_END = '<!-- toc_end -->'
 
     def __init__(self, raw_lines, remove_old_toc=False):
         if remove_old_toc:
@@ -155,11 +154,11 @@ class MarkdownDocument:
     def _create_toc(self, toc_parent_index, start_level, end_level):
         result = []
         parent_index_level = len(toc_parent_index)
-        toc_lines = [line.to_toc_entry(parent_index_level) for line in self.md_lines if isinstance(line, MarkdownHeading) and self._is_in_toc(line, toc_parent_index, start_level, end_level)]
+        toc_lines = [line.to_toc_entry(parent_index_level) for line in self.md_lines if isinstance(line, MarkdownHeading) and self._is_line_in_toc(line, toc_parent_index, start_level, end_level)]
         if toc_lines:
             result.append(self.TOC_START)
             if parent_index_level == 0:
-                result.append(self.TOC_TOP_LINK)
+                result.append(self.TOC_TOP_ANCHOR)
                 result.append(self.TOC_RULER)
             result.extend(toc_lines)
             if parent_index_level == 0:
@@ -167,7 +166,7 @@ class MarkdownDocument:
             result.append(self.TOC_END)
         return result
 
-    def _is_in_toc(self, line, toc_parent_index, start_level, end_level):
+    def _is_line_in_toc(self, line, toc_parent_index, start_level, end_level):
         assert isinstance(line, MarkdownHeading)
         parent_len = len(toc_parent_index)
         current = line.heading_indices.current

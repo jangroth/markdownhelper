@@ -120,30 +120,30 @@ def test_should_determine_if_toc_needs_to_be_inserted(mdd):
 def test_should_determine_if_line_is_in_toc(mdd):
     lines = MarkdownParser().parse(['foo', '# bar', '## bum', '### baz', '# klo'])
 
-    assert mdd._is_in_toc(lines[1], (), 0, 0) is True
-    assert mdd._is_in_toc(lines[1], (), 0, 1) is True
+    assert mdd._is_line_in_toc(lines[1], (), 0, 0) is True
+    assert mdd._is_line_in_toc(lines[1], (), 0, 1) is True
 
-    assert mdd._is_in_toc(lines[2], (), 0, 0) is True
-    assert mdd._is_in_toc(lines[2], (), 0, 1) is False
-    assert mdd._is_in_toc(lines[2], (), 0, 2) is True
+    assert mdd._is_line_in_toc(lines[2], (), 0, 0) is True
+    assert mdd._is_line_in_toc(lines[2], (), 0, 1) is False
+    assert mdd._is_line_in_toc(lines[2], (), 0, 2) is True
 
-    assert mdd._is_in_toc(lines[3], (), 0, 0) is True
-    assert mdd._is_in_toc(lines[3], (), 0, 1) is False
-    assert mdd._is_in_toc(lines[3], (), 0, 2) is False
-    assert mdd._is_in_toc(lines[3], (), 0, 3) is True
+    assert mdd._is_line_in_toc(lines[3], (), 0, 0) is True
+    assert mdd._is_line_in_toc(lines[3], (), 0, 1) is False
+    assert mdd._is_line_in_toc(lines[3], (), 0, 2) is False
+    assert mdd._is_line_in_toc(lines[3], (), 0, 3) is True
 
-    assert mdd._is_in_toc(lines[2], (1,), 2, 3) is True
-    assert mdd._is_in_toc(lines[2], (1,), 3, 3) is False
-    assert mdd._is_in_toc(lines[2], (2,), 2, 3) is False
+    assert mdd._is_line_in_toc(lines[2], (1,), 2, 3) is True
+    assert mdd._is_line_in_toc(lines[2], (1,), 3, 3) is False
+    assert mdd._is_line_in_toc(lines[2], (2,), 2, 3) is False
 
-    assert mdd._is_in_toc(lines[3], (1, 1), 1, 2) is False
+    assert mdd._is_line_in_toc(lines[3], (1, 1), 1, 2) is False
 
 
 def test_is_in_toc_should_fail_if_called_with_markdownline(mdd):
     line = MarkdownParser().parse(['foo'])[0]
 
     with pytest.raises(AssertionError):
-        mdd._is_in_toc(line, (), 0, 0)
+        mdd._is_line_in_toc(line, (), 0, 0)
 
 
 def test_should_only_return_toc_if_it_has_elements(mdp, mdd):
@@ -167,24 +167,24 @@ def test_should_dump_with_debug(mdp, mdd):
 def test_should_dump_with_main_toc(mdp, mdd):
     lines = mdp.parse(['foo', '# bar', '## bum', '### baz', '# klo'])
     mdd.md_lines = lines
-    assert mdd.dump(with_toc=True) == ['', '[toc_start]::', '<a name="top"></a>', '---', '* [bar](#1)', '  * [bum](#1_1)', '    * [baz](#1_1_1)', '* [klo](#2)', '---', '', '[toc_end]::', 'foo', '<a name="1"></a>', '# [↖](#top)[↓](#1_1) bar', '<a name="1_1"></a>', '## [↖](#top)[↑](#1)[↓](#1_1_1) bum', '<a name="1_1_1"></a>', '### [↖](#top)[↑](#1_1)[↓](#2) baz', '<a name="2"></a>', '# [↖](#top)[↑](#1_1_1) klo']
-    assert mdd.dump(with_toc=True, max_main_toc_level=1) == ['', '[toc_start]::', '<a name="top"></a>', '---', '* [bar](#1)', '* [klo](#2)', '---', '', '[toc_end]::', 'foo', '<a name="1"></a>', '# [↖](#top)[↓](#1_1) bar', '## bum', '### baz', '<a name="2"></a>', '# [↖](#top)[↑](#1_1_1) klo']
+    assert mdd.dump(with_toc=True) == [MarkdownDocument.TOC_START, MarkdownDocument.TOC_TOP_ANCHOR, MarkdownDocument.TOC_RULER, '* [bar](#1)', '  * [bum](#1_1)', '    * [baz](#1_1_1)', '* [klo](#2)', MarkdownDocument.TOC_RULER, MarkdownDocument.TOC_END, 'foo', '<a name="1"></a>', '# [↖](#top)[↓](#1_1) bar', '<a name="1_1"></a>', '## [↖](#top)[↑](#1)[↓](#1_1_1) bum', '<a name="1_1_1"></a>', '### [↖](#top)[↑](#1_1)[↓](#2) baz', '<a name="2"></a>', '# [↖](#top)[↑](#1_1_1) klo']
+    assert mdd.dump(with_toc=True, max_main_toc_level=1) == [MarkdownDocument.TOC_START, MarkdownDocument.TOC_TOP_ANCHOR, MarkdownDocument.TOC_RULER, '* [bar](#1)', '* [klo](#2)', MarkdownDocument.TOC_RULER, MarkdownDocument.TOC_END, 'foo', '<a name="1"></a>', '# [↖](#top)[↓](#1_1) bar', '## bum', '### baz', '<a name="2"></a>', '# [↖](#top)[↑](#1_1_1) klo']
 
 
 def test_should_dump_with_main_and_sub_toc(mdp, mdd):
     lines = mdp.parse(['foo', '# bar', '## bum', '### baz', '# klo'])
     mdd.md_lines = lines
-    assert mdd.dump(with_toc=True, max_main_toc_level=1, extra_sub_toc_level=1) == ['', '[toc_start]::', '<a name="top"></a>', '---', '* [bar](#1)', '* [klo](#2)', '---', '', '[toc_end]::', 'foo', '<a name="1"></a>', '# [↖](#top)[↓](#1_1) bar', '', '[toc_start]::', '* [bum](#1_1)', '', '[toc_end]::', '<a name="1_1"></a>', '## [↖](#top)[↑](#1)[↓](#1_1_1) bum', '### baz', '<a name="2"></a>', '# [↖](#top)[↑](#1_1_1) klo']
-    assert mdd.dump(with_toc=True, max_main_toc_level=1, extra_sub_toc_level=2) == ['', '[toc_start]::', '<a name="top"></a>', '---', '* [bar](#1)', '* [klo](#2)', '---', '', '[toc_end]::', 'foo', '<a name="1"></a>', '# [↖](#top)[↓](#1_1) bar', '', '[toc_start]::', '* [bum](#1_1)', '  * [baz](#1_1_1)', '', '[toc_end]::', '<a name="1_1"></a>', '## [↖](#top)[↑](#1)[↓](#1_1_1) bum', '<a name="1_1_1"></a>', '### [↖](#top)[↑](#1_1)[↓](#2) baz', '<a name="2"></a>', '# [↖](#top)[↑](#1_1_1) klo']
+    assert mdd.dump(with_toc=True, max_main_toc_level=1, extra_sub_toc_level=1) == [MarkdownDocument.TOC_START, MarkdownDocument.TOC_TOP_ANCHOR, MarkdownDocument.TOC_RULER, '* [bar](#1)', '* [klo](#2)', MarkdownDocument.TOC_RULER, MarkdownDocument.TOC_END, 'foo', '<a name="1"></a>', '# [↖](#top)[↓](#1_1) bar', MarkdownDocument.TOC_START, '* [bum](#1_1)', MarkdownDocument.TOC_END, '<a name="1_1"></a>', '## [↖](#top)[↑](#1)[↓](#1_1_1) bum', '### baz', '<a name="2"></a>', '# [↖](#top)[↑](#1_1_1) klo']
+    assert mdd.dump(with_toc=True, max_main_toc_level=1, extra_sub_toc_level=2) == [MarkdownDocument.TOC_START, MarkdownDocument.TOC_TOP_ANCHOR, MarkdownDocument.TOC_RULER, '* [bar](#1)', '* [klo](#2)', MarkdownDocument.TOC_RULER, MarkdownDocument.TOC_END, 'foo', '<a name="1"></a>', '# [↖](#top)[↓](#1_1) bar', MarkdownDocument.TOC_START, '* [bum](#1_1)', '  * [baz](#1_1_1)', MarkdownDocument.TOC_END, '<a name="1_1"></a>', '## [↖](#top)[↑](#1)[↓](#1_1_1) bum', '<a name="1_1_1"></a>', '### [↖](#top)[↑](#1_1)[↓](#2) baz', '<a name="2"></a>', '# [↖](#top)[↑](#1_1_1) klo']
 
 
 def test_should_not_render_anchors_if_line_is_not_linked_to(mdp, mdd):
     lines = mdp.parse(['foo', '# bar', '## bum', '### baz', '# klo'])
     mdd.md_lines = lines
-    assert mdd.dump(with_toc=True, max_main_toc_level=1) == ['', '[toc_start]::', '<a name="top"></a>', '---', '* [bar](#1)', '* [klo](#2)', '---', '', '[toc_end]::', 'foo', '<a name="1"></a>', '# [↖](#top)[↓](#1_1) bar', '## bum', '### baz', '<a name="2"></a>', '# [↖](#top)[↑](#1_1_1) klo']
+    assert mdd.dump(with_toc=True, max_main_toc_level=1) == [MarkdownDocument.TOC_START, MarkdownDocument.TOC_TOP_ANCHOR, MarkdownDocument.TOC_RULER, '* [bar](#1)', '* [klo](#2)', MarkdownDocument.TOC_RULER, MarkdownDocument.TOC_END, 'foo', '<a name="1"></a>', '# [↖](#top)[↓](#1_1) bar', '## bum', '### baz', '<a name="2"></a>', '# [↖](#top)[↑](#1_1_1) klo']
 
 
 def test_should_render_navigation_links(mdp, mdd):
     lines = mdp.parse(['foo', '# bar', '## bum', '### baz', '# klo'])
     mdd.md_lines = lines
-    assert mdd.dump(with_toc=True, max_main_toc_level=1) == ['', '[toc_start]::', '<a name="top"></a>', '---', '* [bar](#1)', '* [klo](#2)', '---', '', '[toc_end]::', 'foo', '<a name="1"></a>', '# [↖](#top)[↓](#1_1) bar', '## bum', '### baz', '<a name="2"></a>', '# [↖](#top)[↑](#1_1_1) klo']
+    assert mdd.dump(with_toc=True, max_main_toc_level=1) == [MarkdownDocument.TOC_START, MarkdownDocument.TOC_TOP_ANCHOR, MarkdownDocument.TOC_RULER, '* [bar](#1)', '* [klo](#2)', MarkdownDocument.TOC_RULER, MarkdownDocument.TOC_END, 'foo', '<a name="1"></a>', '# [↖](#top)[↓](#1_1) bar', '## bum', '### baz', '<a name="2"></a>', '# [↖](#top)[↑](#1_1_1) klo']
