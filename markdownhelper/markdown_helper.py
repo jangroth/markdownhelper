@@ -43,9 +43,11 @@ class MarkdownHeading(MarkdownLine):
         return '[↖](#top)'
 
     def link_to_previous(self):
+        # TODO: Only link if this has an anchor
         return f'[↑](#{MarkdownHeading._anchor_name(self.heading_indices.previous)})' if self.heading_indices.previous else ''
 
     def link_to_next(self):
+        # TODO: Only link if this has an anchor
         return f'[↓](#{MarkdownHeading._anchor_name(self.heading_indices.next)})' if self.heading_indices.next else ''
 
     def to_markdown(self, with_anchor=False, top_level=0, sub_level=0, with_debug=False):

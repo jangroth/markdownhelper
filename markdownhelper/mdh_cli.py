@@ -30,7 +30,7 @@ def toc(path, top_level, sub_level, navigation):
     MarkdownHelper(path=path).add_toc(add_navigation=navigation, top_level=top_level, sub_level=sub_level)
 
 
-if __name__ == '__main__':
+def main():
     mdh.add_command(dump)
     mdh.add_command(cleanse)
     mdh.add_command(toc)

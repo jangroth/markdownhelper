@@ -2,7 +2,7 @@
 
 # CLI Helper for Markdown (WIP)
 
-Adds or removes table of contents to  markdown document. 
+Adds or removes tables of content (TOC) to or from markdown documents. 
 
 ```bash
 ./bin/mdh --help
