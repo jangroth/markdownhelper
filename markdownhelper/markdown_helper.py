@@ -38,9 +38,11 @@ class MarkdownHeading(MarkdownLine):
                f'* ' \
                f'[{self.text_after_heading}](#{MarkdownHeading._anchor_name(self.heading_indices.current)})'
 
-    def link_to_top(self):
-        # TODO: Link to sub heading for sub-TOCs
-        return '[↖](#top)'
+    def link_to_top(self, top_level, sub_level):
+        if top_level != 0 and self.heading_level > top_level:
+            return f'[↖](#{MarkdownHeading._anchor_name(self.heading_indices.current[:top_level])})'
+        else:
+            return '[↖](#top)'
 
     def link_to_previous(self):
         return f'[↑](#{MarkdownHeading._anchor_name(self.heading_indices.previous)})' if self.heading_indices.previous else ''
@@ -52,7 +54,7 @@ class MarkdownHeading(MarkdownLine):
         result = []
         if with_anchor:
             result.append(self._complete_anchor())
-        navigation_links_part = f'{self.link_to_top()}{self.link_to_previous()}{self.link_to_next()} ' if with_anchor else ''
+        navigation_links_part = f'{self.link_to_top(top_level, sub_level)}{self.link_to_previous()}{self.link_to_next()} ' if with_anchor else ''
         debug_part = f'{self.heading_indices.current} ' if with_debug else ''
         result.append(f'{self.heading} {navigation_links_part}{debug_part}{self.text_after_heading}')
         return result

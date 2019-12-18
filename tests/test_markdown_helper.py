@@ -55,6 +55,22 @@ def test_dont_render_navlink_if_target_doesnt_exist(mdp):
     assert line.to_markdown(with_anchor=True) == ['<a name="1"></a>', '# [↖](#top) foo']
 
 
+def test_link_to_top_should_point_to_sub_toc_if_appropriate(mdp):
+    lines = mdp.parse(['# foo', '## foo', '### foo', '### bar'])
+    line = lines[0]
+    assert line.to_markdown(with_anchor=True, top_level=1) == ['<a name="1"></a>', '# [↖](#top)[↓](#1_1) foo']
+    assert line.to_markdown(with_anchor=True, top_level=2) == ['<a name="1"></a>', '# [↖](#top)[↓](#1_1) foo']
+    line = lines[1]
+    assert line.to_markdown(with_anchor=True, top_level=1) == ['<a name="1_1"></a>', '## [↖](#1)[↑](#1)[↓](#1_1_1) foo']
+    assert line.to_markdown(with_anchor=True, top_level=2) == ['<a name="1_1"></a>', '## [↖](#top)[↑](#1)[↓](#1_1_1) foo']
+    line = lines[2]
+    assert line.to_markdown(with_anchor=True, top_level=1) == ['<a name="1_1_1"></a>', '### [↖](#1)[↑](#1_1)[↓](#1_1_2) foo']
+    assert line.to_markdown(with_anchor=True, top_level=2) == ['<a name="1_1_1"></a>', '### [↖](#1_1)[↑](#1_1)[↓](#1_1_2) foo']
+    line = lines[3]
+    assert line.to_markdown(with_anchor=True, top_level=1) == ['<a name="1_1_2"></a>', '### [↖](#1)[↑](#1_1_1) bar']
+    assert line.to_markdown(with_anchor=True, top_level=2) == ['<a name="1_1_2"></a>', '### [↖](#1_1)[↑](#1_1_1) bar']
+
+
 # --- parser tests
 
 def test_calculate_new_index(mdp):
@@ -174,8 +190,8 @@ def test_should_dump_with_main_toc(mdp, mdd):
 def test_should_dump_with_main_and_sub_toc(mdp, mdd):
     lines = mdp.parse(['foo', '# bar', '## bum', '### baz', '# klo'])
     mdd.md_lines = lines
-    assert mdd.dump(with_toc=True, max_main_toc_level=1, extra_sub_toc_level=1) == [MarkdownDocument.TOC_START, MarkdownDocument.TOC_TOP_ANCHOR, MarkdownDocument.TOC_RULER, '* [bar](#1)', '* [klo](#2)', MarkdownDocument.TOC_RULER, MarkdownDocument.TOC_END, 'foo', '<a name="1"></a>', '# [↖](#top)[↓](#1_1) bar', MarkdownDocument.TOC_START, '* [bum](#1_1)', MarkdownDocument.TOC_END, '<a name="1_1"></a>', '## [↖](#top)[↑](#1)[↓](#1_1_1) bum', '### baz', '<a name="2"></a>', '# [↖](#top)[↑](#1_1_1) klo']
-    assert mdd.dump(with_toc=True, max_main_toc_level=1, extra_sub_toc_level=2) == [MarkdownDocument.TOC_START, MarkdownDocument.TOC_TOP_ANCHOR, MarkdownDocument.TOC_RULER, '* [bar](#1)', '* [klo](#2)', MarkdownDocument.TOC_RULER, MarkdownDocument.TOC_END, 'foo', '<a name="1"></a>', '# [↖](#top)[↓](#1_1) bar', MarkdownDocument.TOC_START, '* [bum](#1_1)', '  * [baz](#1_1_1)', MarkdownDocument.TOC_END, '<a name="1_1"></a>', '## [↖](#top)[↑](#1)[↓](#1_1_1) bum', '<a name="1_1_1"></a>', '### [↖](#top)[↑](#1_1)[↓](#2) baz', '<a name="2"></a>', '# [↖](#top)[↑](#1_1_1) klo']
+    assert mdd.dump(with_toc=True, max_main_toc_level=1, extra_sub_toc_level=1) == [MarkdownDocument.TOC_START, MarkdownDocument.TOC_TOP_ANCHOR, MarkdownDocument.TOC_RULER, '* [bar](#1)', '* [klo](#2)', MarkdownDocument.TOC_RULER, MarkdownDocument.TOC_END, 'foo', '<a name="1"></a>', '# [↖](#top)[↓](#1_1) bar', MarkdownDocument.TOC_START, '* [bum](#1_1)', MarkdownDocument.TOC_END, '<a name="1_1"></a>', '## [↖](#1)[↑](#1)[↓](#1_1_1) bum', '### baz', '<a name="2"></a>', '# [↖](#top)[↑](#1_1_1) klo']
+    assert mdd.dump(with_toc=True, max_main_toc_level=1, extra_sub_toc_level=2) == [MarkdownDocument.TOC_START, MarkdownDocument.TOC_TOP_ANCHOR, MarkdownDocument.TOC_RULER, '* [bar](#1)', '* [klo](#2)', MarkdownDocument.TOC_RULER, MarkdownDocument.TOC_END, 'foo', '<a name="1"></a>', '# [↖](#top)[↓](#1_1) bar', MarkdownDocument.TOC_START, '* [bum](#1_1)', '  * [baz](#1_1_1)', MarkdownDocument.TOC_END, '<a name="1_1"></a>', '## [↖](#1)[↑](#1)[↓](#1_1_1) bum', '<a name="1_1_1"></a>', '### [↖](#1)[↑](#1_1)[↓](#2) baz', '<a name="2"></a>', '# [↖](#top)[↑](#1_1_1) klo']
 
 
 def test_should_not_render_anchors_if_line_is_not_linked_to(mdp, mdd):
