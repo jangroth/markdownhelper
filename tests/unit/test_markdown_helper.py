@@ -1,6 +1,6 @@
 import pytest
 
-from markdown_helper import MarkdownLine, MarkdownParser, MarkdownHeading, HeadingIndices, MarkdownDocument
+from markdown_helper import MarkdownParser, MarkdownDocument, MarkdownLine, MarkdownHeading, HeadingIndices
 
 
 @pytest.fixture

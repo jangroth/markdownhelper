@@ -8,7 +8,7 @@ from markdown_helper import MarkdownHelper
 @pytest.fixture
 def mdh():
     current_dir = os.path.dirname(os.path.realpath(__file__))
-    test_file = os.path.join(current_dir, 'resources', 'simple.md')
+    test_file = os.path.join(current_dir, '..', 'resources', 'simple.md')
     return MarkdownHelper(test_file)
 
 
