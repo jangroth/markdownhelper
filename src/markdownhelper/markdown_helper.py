@@ -113,7 +113,7 @@ class MarkdownParser:
 class MarkdownDocument:
     REG_SPACER_BETWEEN_HEADER_AND_LINK = re.compile('(?<=#) (?=\\[)')
     REG_INTERNAL_ANCHOR = re.compile('<a.*name.*a>')
-    REG_INTERNAL_LINK = re.compile('\\[.*\\]\\(#.*\\)')
+    REG_INTERNAL_LINK = re.compile('(?<=#)\\[[^azAZ]*\\)(?= )')
     TOC_START = '<!-- toc_start -->'
     TOC_TOP_ANCHOR = '<a name="top"></a>'
     TOC_RULER = '---'

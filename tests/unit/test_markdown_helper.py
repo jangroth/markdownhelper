@@ -1,3 +1,5 @@
+import re
+
 import pytest
 
 from markdown_helper import MarkdownParser, MarkdownDocument, MarkdownLine, MarkdownHeading, HeadingIndices
@@ -31,9 +33,9 @@ def test_should_recognize_heading(mdp):
     assert line.raw_text == '# foo'
     assert line.heading_level == 1
 
-    line = mdp.parse(['## foo bar'])[0]
+    line = mdp.parse(['## foo (bar)'])[0]
     assert isinstance(line, MarkdownHeading)
-    assert line.raw_text == '## foo bar'
+    assert line.raw_text == '## foo (bar)'
     assert line.heading_level == 2
 
 
@@ -48,6 +50,8 @@ def test_should_convert_mh_to_toc_entry(mdp):
     assert line.to_toc_entry(0) == '* [foo](#1)'
     line = mdp.parse(['# foo', '## bar baz'])[1]
     assert line.to_toc_entry(0) == '  * [bar baz](#1_1)'
+    line = mdp.parse(['# foo', '## bar (baz)'])[1]
+    assert line.to_toc_entry(0) == '  * [bar (baz)](#1_1)'
 
 
 def test_dont_render_navlink_if_target_doesnt_exist(mdp):
@@ -116,10 +120,18 @@ def test_should_fail_if_trying_to_remove_unbalanced_toc(mdd):
         mdd._remove_existing_tocs([mdd.TOC_END, mdd.TOC_START])
 
 
-def test_should_cleanse_old_toc(mdp):
-    md_lines_with_old_toc = mdp.parse(['foo', '# bar', '## bum', '### baz', '# klo'])
-    cleansed_lines = list(MarkdownDocument._cleansing_generator([str(line) for line in md_lines_with_old_toc]))
-    assert cleansed_lines == ['foo', '# bar', '## bum', '### baz', '# klo']
+def test_reg_ex_for_internal_link(mdd):
+    test_ex = MarkdownDocument.REG_INTERNAL_LINK
+    assert re.sub(test_ex, '', "##[↖](#top)[↑](#1_1)[↓](#2) Laudem persius") == '## Laudem persius'
+    assert re.sub(test_ex, '', "##[↖](#top)[↑](#1_1)[↓](#2) Laudem persius (core)") == '## Laudem persius (core)'
+    assert re.sub(test_ex, '', "##[↖](#top)[↑](#1_1)[↓](#2) Laudem (core) persius") == '## Laudem (core) persius'
+
+
+def test_should_cleanse_old_tocs_and_anchors_and_nav_links(mdd):
+    mdd.md_lines = MarkdownParser().parse(['foo', '# bar (core)', '## bum', '### baz', '# klo'])
+    result = mdd.dump(with_toc=True, with_navigation_arrows=True)
+    cleansed_lines = list(MarkdownDocument._cleansing_generator([str(line) for line in result]))
+    assert cleansed_lines == ['foo', '# bar (core)', '## bum', '### baz', '# klo']
 
 
 def test_should_determine_if_toc_needs_to_be_inserted(mdd):
@@ -134,7 +146,7 @@ def test_should_determine_if_toc_needs_to_be_inserted(mdd):
 
 
 def test_should_determine_if_line_is_in_toc(mdd):
-    lines = MarkdownParser().parse(['foo', '# bar', '## bum', '### baz', '# klo'])
+    lines = MarkdownParser().parse(['foo', '# bar', '## bum (core)', '### baz', '# klo'])
 
     assert mdd._is_line_in_toc(lines[1], (), 0, 0) is True
     assert mdd._is_line_in_toc(lines[1], (), 0, 1) is True
@@ -169,9 +181,9 @@ def test_should_only_return_toc_if_it_has_elements(mdp, mdd):
 
 
 def test_should_dump_no_extras(mdp, mdd):
-    lines = mdp.parse(['foo', '# bar', '## bum', '### baz', '# klo'])
+    lines = mdp.parse(['foo', '# bar', '## bum (core)', '### baz', '# klo'])
     mdd.md_lines = lines
-    assert mdd.dump() == ['foo', '# bar', '## bum', '### baz', '# klo']
+    assert mdd.dump() == ['foo', '# bar', '## bum (core)', '### baz', '# klo']
 
 
 def test_should_dump_with_debug(mdp, mdd):
