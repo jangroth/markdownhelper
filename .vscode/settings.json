@@ -1,0 +1,20 @@
+{
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python.testing.nosetestsEnabled": false,
+    "python.linting.enabled": true,
+    "python.linting.flake8Enabled": true,
+    "python.linting.flake8Args": [
+        "--ignore=E501"
+    ],
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true
+    },
+    "python.formatting.provider": "autopep8",
+    "python.formatting.autopep8Args": [
+        "--ignore=E501"
+    ]
+}

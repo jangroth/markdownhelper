@@ -1,6 +1,6 @@
 [<img src="https://github.com/jangroth/markdownhelper/workflows/build/badge.svg" alt="build_status" width="200"/>](https://github.com/jangroth/markdownhelper/actions)
 
-# CLI Helper for Markdown (WIP)
+# CLI Helper for Markdown
 
 Adds or removes table of contents to  markdown document. 
 
